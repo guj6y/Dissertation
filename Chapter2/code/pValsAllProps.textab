@@ -1,0 +1,14 @@
+Number&Name\\
+\hline
+1&clustCoef\\
+2&gen\\
+3&vul\\
+4&$<$vulPrey$>$\\
+5&$<$impPrey$>$\\
+6&$<$genPred$>$\\
+7&$<$ImpPred$>$\\
+8&minTL\\
+9&basalCon\\
+10&SWTL\\
+11&inLoop\\
+12&para\\
