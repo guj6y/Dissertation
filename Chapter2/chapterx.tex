@@ -1,0 +1,178 @@
+\documentclass{article}
+
+\title{}
+
+\begin{document}
+\maketitle
+
+\chapter{Chapter 2: Empirical Food Webs and the Parasitic Niche}
+
+\section{Abstract}
+
+\section{Introduction}
+
+\section{Data} We analyzed 6 speciose food webs with well-resolved parasite
+communities. See table \ref{tab:foodWebSummary} for a summary of the basic
+structural properties in each of the six webs. All six food webs represent
+coastal ecosystems. Three are located on the pacific coast of southern
+California and Mexico \cite{Hechinger2011}; two are located on the north sea
+\cite{Thieltges2005,Zander2011}; one is located in New Zealand
+\cite{Mouritsen2006}. 
+
+These food webs have been the subject of studies of the effect of parasites on
+global network properties as well as their robustness to species removal
+\cite{Dunne2013,Lafferty2012}. This study extends previous work by attempting
+to elucidate unique features of parasitic niches in these food webs with the
+aim of generating a set of rules that identify parasites strictly by their
+local topological properties within a food web.
+
+\section{Methods} We first constructed trophic webs from each of the 6 raw food
+webs. The raw food web data differentiates between 21 types of interspecies
+interactions. We distinguished two different link types: (1) free-living
+consumption and (2) parasitism. See table \ref{tab:foodWebLinks} for a summary
+of link types in the raw data and how each type was classified in our
+construction of the trophic food web. We classified a species as a parasite if
+it was the consumer node in a parasitism link; all other consumers were
+classified as free-livers. We then aggregated nodes in the raw web with
+identical consumer and resource sets into trophic nodes. 
+
+\subsection{Nodal Properties of Parasites} We calculated local properties of
+nodes in an attempt to find a structural fingerprint of parasitism. The
+properties calculated include traditional local properties of ecological
+interest (vulnerability, generality, and trophic level) and network theoretic
+properties not commonly found in ecological studies (see below). See table
+\ref{tab:localProperties} for a summary of these network properties.
+\fxnote{References for these properties.} 
+
+\subsubsection{Betweenness centralities} Betweenness centrality is a measure of
+how often a particular node appears in shortest paths between each other pair
+of nodes. This measure was developed in the context of information flow through
+social networks; nodes with a high betweenness are likely to be gatekeepers
+between highly connected components. The original measure as developed in
+\cite{Freeman1977,Anthonisse1971} of a node, $v$, is
+
+\begin{equation} 
+    C_B(v) = \sum_{s\neq\v\neq\t\inV}\frac{\sigma_{st}(v)}{\sigma_{st}}
+\label{eq:BetweennessCentrality} 
+\end{equation}
+
+where $\sigma_{st}(v)$ is the number of shortest paths between node $s$ and $t$
+that pass through $v$, and $\sigma_{st}$ is the total number of shortest paths
+between nodes $s$ and $t$.
+
+We offer a slight refinement of betweenness centrality by only counting
+shortest paths between a basal species and a consumer species. The ecological
+betweenness centrality, $C_EB$ of a node $k$, is given by:
+
+\begin{equation} 
+    C_{EB}(v) = \sum_{s\in\text{bas},t\in\text{con},t\neq v}\frac{\sigma_{ij}(v)}{\sigma_{ij})
+\label{eq:EcologicalBetweennessCentrality} 
+\end{equation}
+
+where $\sigma_{st}$ and $\sigma_{st}(v)$ are as in
+\ref{eq:BetweennessCentrality}. We believe this may be of greater ecological
+significance as the shortest path to a basal is likely to be much more
+energetically important for a species than the shortest path between two
+species at similar trophic levels.
+
+\subsubsection{Mean Generality of Consumers} This property does exactly what it
+says: it is the average normalized generality of all the consumers of a
+particular node. This aims to measure the importance of a node in the diet of
+its predators. If $\mathcal{C}(i)$ is the set of consumers of $i$ and $g_j$ is
+the generality of node $j$, then the mean generality of consumers of node $i$,
+$g_c(i)$ is given by
+
+\begin{equation} 
+    g_c(i) = \frac{1}{|\mathcal{C}(i)|}\sum_{j\in\mathcal{C}(i)}g_j
+\label{eq:MeanGeneralityConsumers} 
+\end{equation}
+
+\subsubsection{Mean Vulnerability of Resources} This property also does exactly
+what it says it advertises: it is the average normalized vulnerability of all
+the resources of a particular node. This aims to measure the topological
+importance of a node on its resources. If $\mathcal{R}(i)$ is the set of
+resources of $i$ and $v_j$ is the vulnerability of node $j$, then the mean
+vulnerability of resources of node $i$, $v_r(i)$ is given by
+
+\begin{equation} 
+    v_r(i) = \frac{1}{|\mathcal{R}(i)|}\sum_{j\in\mathcal{R}(i)}v_j
+\label{eq:MeanVulnerabilityResources}  
+\end{equation}
+
+\subsubsection{An Eigenvalue Based Measure of Centrality} The PageRank measure
+achieved fame as one of the metrics behind the popular Google search engine. We
+follow \cite{Allesina2009} in a modification of the PageRank algorithm to
+create an eigenvalue-based centrality measure suitable for food webs.  Roughly
+speaking, this measure quantifies of the importance of each node in terms of
+nutrient flow through the ecosystem.
+
+\subsubsection{Normalization} The above measures can be highly dependent on
+network size and complexity. Before comparing parasite and free-living nodes,
+we normalize each metric by dividing by the average value of all consumers.
+
+\subsection{Agglomeration of Webs} We were also interested in how food web
+resolution affected the above measures of centrality. For each of the 6
+empirical webs, we used the unweighted pair group method with arithmetic mean
+(UPGMA, \cite{Sokal1958}) with the Jaccard distance to group similar nodes as
+in \cite{Martinez1991}. The Jaccard Distance, \cite{Jaccard1908} was calculated
+as 
+
+\begin{equation} 
+    d_J(s,t) = 1-\frac{|\mathcal{N}(s)\cap \mathcal{N}(t)|}{\frac{|\mathcal{N}(s)\cup \mathcal{N}(t)|}
+\label{eq:JaccardDistance} 
+\end{equation} 
+
+where $\mathcal{N}(v)$ is the set of all neighbors (i.e. all predators and all
+prey) of node $v$. We define the distance between two clusters of nodes using
+average linkage clustering: for two clusters $\mathcal{A}$ and $\mathcal{B}$,
+define $d_J(\mathcal{A},\mathcal{B})$ as
+
+\begin{equation} 
+    d_J(\mathcal{A},\mathcal{B}) = \frac{1}{|\mathcal{A}|\cdot|\mathcal{B}|}\sum_{s\in\mathcal{A}}\sum_{t\in\mathcal{B}}d_J(s,t)
+\label{eq:averageLinkage} 
+\end{equation}
+
+The result of the clustering algorithm was a sequence of clusters of species;
+in order to define a web at each level of aggregation, we also needed to define
+feeding relationships between the clusters. We used the "maximum linkage
+criterion" as defined in \cite{Martinez1991}. The six webs studied here had
+much lower connectances than the Little Rock Lake food web, so more stringent
+linkage criteria (i.e. the "mean linkage criterion") quickly resulted in
+disconnected webs. 
+
+For each food web defined along the clustering sequence, we calculated the
+aforementioned nodal and global properties. 
+
+\subsubsection{Breaking Ties} The sequence of clusters resulting from
+agglomerative clustering algorithms are non-deterministic in the presence of
+ties in the distance between pairs of clusters. At each stage, we first
+identified all potential mergers between clusters. We then label the smaller
+cluster the \textit{satellite} and the larger cluster the \textit{sink} for
+each merger; if the two clusters for a given merger were the same size, each
+cluster had equal probability of being assigned as the \textit{sink}. After
+identifying the satellite and the sink, we model the merger of two clusters as
+the satellite being subsumed into the sink. After identifying the satellites
+and the sinks, we merge the smallest satellites into the smallest sinks. When a
+satellite merges into a sink, it is ineligible for any further mergers. The
+sinks, however, remain eligible for further mergers until they are subsumed
+into a larger sink. Any ties between mergers with the same size satellite and
+same size sink were broken at random. We used the tie-breaker to encourage a
+more even distribution of nodes among clusters. \fxnote{Explain the basic thing
+    I was worried about here? But, it's not really part of my THESIS so I don't
+want to belabor it.} 
+
+\section{Results} 
+The parasite average plotted against the free-liver average
+for each empirical trophic web is given in figure
+\ref{fig:InitialNodalProperties}. There was little evidence of consistent
+differences between parasites and free-livers on average for generality,
+clustering coefficient or classic betweenness centrality. 
+
+\subsection{Initial Webs}
+
+\subsection{Agglomerated Webs}
+
+    
+\section{Conclusions} Conclusions go here.
+
+\end{document}

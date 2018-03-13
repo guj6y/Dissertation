@@ -1,0 +1,21 @@
+\documentclass[../dissertation.tex]{subfiles}
+
+\title{Chapter 3: Prediction of Parasite Identity from Local Network Properites in Empirical Webs}
+
+\begin{document}
+\maketitle
+
+\section{Abstract}
+Abstract Goes Here.
+\section{Introduction}
+Introduction Goes Here.
+\section{Methods}
+Methods Go Here.
+\section{Data}
+Summary of the Data go here.
+\section{Results of Classification}
+Display the results of the classifications
+\section{Conclusions}
+Conclusions go here.
+
+\end{document}
