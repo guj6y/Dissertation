@@ -1,40 +1,28 @@
-function [propertiesMax,propertiesMean,propertiesMin] = agglom(res,con,para0)
+function [properties,webs] = agglom(res,con,para0)
 
-emptyPropertiesStruct = struct('local',struct,'global',struct);
+S = numel(para0);
+nSpeciesPerNode = ones(S,1);
+nParasitesPerNode = para0+0;
+para0=para0+0;
 
-propertiesMax = emptyPropertiesStruct;
-propertiesMean = emptyPropertiesStruct;
-propertiesMin = emptyPropertiesStruct;
+A = sparse(res,con,1,S,S);
+[nodalProps,globalProps,localMeans] = agglomProps(A,para0,nSpeciesPerNode,0);
 
-numLocalProps = 18;
-numGlobalProps = 15;
-S = max([res;con]);
+[S,nLocalProps] = size(nodalProps);
+nGlobalProps = length(globalProps);
+nLocalMeans = length(localMeans);
 
-localPropertiesMax = nan(S,numLocalProps);
-localPropertiesMean = nan(S,numLocalProps);
-localPropertiesMin = nan(S,numLocalProps);
+bigLocalPropertiesMatrix = -9999*ones(S*(S+1)/2,nLocalProps);
+bigGlobalPropertiesMatrix = -9999*ones(S,nGlobalProps);
+bigLocalMeansMatrix = -9999*ones(S,nLocalMeans);
 
-globalPropertiesMax = nan(S,numGlobalProps+1);
-globalPropertiesMean = nan(S,numGlobalProps+1);
-globalPropertiesMin = nan(S,numGlobalProps+1);
+bigLocalPropertiesMatrix(1:S,1:nLocalProps) = nodalProps;
+bigGlobalPropertiesMatrix(1,:) = globalProps;
+bigLocalMeansMatrix(1,:) = localMeans;
 
-globalPropertiesMax(:,1) = 1:S;
-globalPropertiesMean(:,1) = 1:S;
-globalPropertiesMin(:,1) = 1:S;
+startingPoints = [0;cumsum((S:-1:2)')+1];
+findStartingPoints = ((S):-1:1)';
 
-linkageMatrixCell = cell(S,1);
-speciesPerNodeCell = cell(S,1);
-parasitesPerNodeCell = cell(S,1);
-
-maxAdjacencyMatrixCell = cell(S,1);
-meanAdjacencyMatrixCell = cell(S,1);
-minAdjacencyMatrixCell = cell(S,1);
-
-corrMaxMatrices = nan(9,9,S);
-corrMinMatrices = nan(9,9,S);
-corrMeanMatrices = nan(9,9,S);
-
-S = max([res;con]);
 res0 = res;
 con0 = con;
 linkageMatrix = full(sparse(res0,con0,1,S,S));
@@ -47,8 +35,6 @@ Jall = zeros(S-1,1);
 %calculate the jaccard distance between all nodes:
 jaccardMatrix = 1 - calculateSimilarity(res,con);
 
-nSpeciesPerNode = ones(S,1);
-nParasitesPerNode = para0+0;
 ii = 0;
 nNodes = length(jaccardMatrix);
 while nNodes > 10
@@ -133,8 +119,6 @@ while nNodes > 10
     
     while numel(I)>0
         ii = ii+1;
-        speciesPerNodeCell{ii} = nSpeciesPerNode;
-        parasitesPerNodeCell{ii} = nParasitesPerNode;
         linkageMatrixCell{ii} = linkageMatrix;
         jaccardMatrices{ii} = jaccardMatrix;
         
@@ -201,47 +185,32 @@ while nNodes > 10
         nSpeciesPerNode(J(1)) = nSpeciesPerNode(J(1)) + nSpeciesPerNode(I(1));
         nParasitesPerNode(J(1)) = nParasitesPerNode(J(1)) + nParasitesPerNode(I(1));
         
-        speciesPerNodeCell{ii} = nSpeciesPerNode;
-        parasitesPerNodeCell{ii} = nParasitesPerNode;
         nSpeciesPerNode(I(1)) = [];
         nParasitesPerNode(I(1)) = [];
         
         para = nParasitesPerNode./nSpeciesPerNode;
-        
-        maxLinkageMatrix = nSpeciesPerNode*nSpeciesPerNode';
-        maxA = linkageMatrix>0;
-        maxAdjacencyMatrixCell{ii} = maxA;
+        %Max Linkage Criterion
+        A = linkageMatrix>0;
+        adjacencyMatrixCell{ii} = A;
         %{
-        meanA = linkageMatrix>=0.5*maxLinkageMatrix;
-        meanAdjacencyMatrixCell{ii} = meanA;
+        maxLinkageMatrix = nSpeciesPerNode*nSpeciesPerNode';        
+        %Mean linkage criterion
         %
-        minA = linkageMatrix==maxLinkageMatrix;
-        minAdjacencyMatrixCell{ii} = minA;
+        %
+        A = linkageMatrix>=0.5*maxLinkageMatrix;
+        adjacencyMatrixCell{ii} = A;
+        %
+        %Min Linkage Criterion
+        A = linkageMatrix==maxLinkageMatrix;
         %}
+        %
+        [localProps, globalProps, localMeans] = agglomProps(A,para,nSpeciesPerNode,minDistance);
+        startHere = startingPoints(nNodes==findStartingPoints);
+        endHere = startHere+nNodes-1;
         
-        if max(size(maxA))<2
-            fprintf('wtfmate?\n')
-        end
-        %
-        [localMaxProps, globalMaxProps,corrMaxMatrix] = agglomProps(maxA,para);
-        localPropertiesMax(ii,:) = localMaxProps;
-        globalPropertiesMax(ii,2:end) = globalMaxProps;
-        corrMaxMatrices(:,:,ii) = corrMaxMatrix;
-        %{
-        [localMeanProps, globalMeanProps,corrMeanMatrix] = agglomProps(meanA,para);
-        localPropertiesMean(ii,:) = localMeanProps;
-        globalPropertiesMean(ii,2:end) = globalMeanProps;
-        corrMeanMatrices(:,:,ii) = corrMeanMatrix;
-        %
-        try
-        [localMinProps, globalMinProps,corrMinMatrix] = agglomProps(minA,para);
-        catch
-            fprintf('wtf,mate?\n')
-        end
-        localPropertiesMin(ii,:) = localMinProps;
-        globalPropertiesMin(ii,2:end) = globalMinProps;
-        corrMinMatrices(:,:,ii) = corrMinMatrix;
-        %}
+        bigLocalPropertiesMatrix(startHere:endHere,:) = localProps;
+        bigGlobalPropertiesMatrix(nNodes==findStartingPoints,:) = globalProps;
+        bigLocalMeansMatrix(nNodes==findStartingPoints,:) = localMeans;
 
         I(I>I(1)) = I(I>I(1))-1;
         J(J>I(1)) = J(J>I(1))-1;
@@ -252,10 +221,10 @@ while nNodes > 10
 
 end
 
-propertiesMax.local = localPropertiesMax;
-propertiesMax.global = globalPropertiesMax;
-propertiesMax.corr = corrMaxMatrices;
-propertiesMax.adjacencyMatrices = maxAdjacencyMatrixCell;
+webs = adjacencyMatrixCell;
+properties.local = bigLocalPropertiesMatrix(bigLocalPropertiesMatrix(:,1)~=-9999,:);
+properties.global = bigGlobalPropertiesMatrix(bigGlobalPropertiesMatrix(:,1)~=-9999,:);
+properties.localMeans = bigLocalMeansMatrix(bigLocalMeansMatrix(:,1)~=-9999,:);
 %{
 propertiesMean.local = localPropertiesMean;
 propertiesMean.global = globalPropertiesMean;

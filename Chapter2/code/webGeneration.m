@@ -19,7 +19,7 @@
     %in the metadata.
 
     %Requires a somewhat recent
-
+    clear
     linkFiles = {'BSQweb_Links.txt',...
         'CSMweb_Links.txt',...
         'EPBweb_Links.txt',...
@@ -139,7 +139,7 @@
     seGenPool = zeros(nWebs,1);
     
     for ii = 1:nWebs
-        cd('Raw/')
+        cd('data/Raw/')
         cd('Links')
         if ii<7
             linkData = readtable(linkFiles{ii},'Delimiter','tab','ReadVariableNames',true);
@@ -643,7 +643,7 @@
         elseif topoConcomittant
             continue
         else
-            cd('../../Data/Processed')
+            cd('data/Processed')
             fid = fopen(sprintf('%sWeb.csv',shortWebNames{ii}),'w');
             fprintf(fid,'res,con,para\n');
             fprintf(fid,'%u,%u,%u\n',[res,con,linkPara]');
@@ -661,7 +661,10 @@
         
     end
 
-
+cd('data/Processed')
+close all
+save('webGeneration.mat')
+cd(codeDir)
 
 
 

@@ -1,4 +1,4 @@
-function [localProperties,globalProperties,pearCorr,spearCorr] = agglomProps(A,para)
+function [localProperties,globalProperties,localMeans] = agglomProps(A,para,nodeSize,minDistance)
 
 %Check for the connected component; don't worry about the web having basal
 %species, etc. since we are not trying to develop a dynamical model for
@@ -30,7 +30,7 @@ if numLargest>1
     end
     comps = 1:n;
     fprintf('Tie in largest component... averaging them.\n')
-    localProperties = zeros(1,18);
+    localProperties = zeros(1,9);
     globalProperties = zeros(1,15);
     %TODO: fix this with new structures.
     for ii = comps(compSizes==maxCompSize)
@@ -48,6 +48,7 @@ winners = grps==largeComp;
 A = A(winners,winners);
 [res,con] = find(A);
 para = para(winners);
+
 
 %Now, we calculate properties using the largest connected component.
 S = length(A);
@@ -68,10 +69,12 @@ binCons = (~basal);
 free = 1-para;
 free(basal) = 0;
 
-gen = gen./(mean(gen(binCons)));
+para = para*nodeSize;
+free = free*nodeSize;
 
-genPara = wmean(gen,para);
-genFree = wmean(gen,free);
+gen = gen./(mean(gen));
+genFree = wmean(gen,free)/mean(gen(binCons));
+genPara = wmean(gen,para)/mean(gen(binCons));
 
 %Mean generality of predators
 %Mean topological fraction of predators' diet
@@ -84,16 +87,16 @@ for ii = 1:S
         meanGenPred(ii) = 0;
     end
 end
-meanGenPred = meanGenPred./mean(meanGenPred(binCons));
-meanGenPredFree = wmean(meanGenPred,free);
-meanGenPredPara = wmean(meanGenPred,para);
+meanGenPred = meanGenPred./mean(meanGenPred);
+meanGenPredFree = wmean(meanGenPred,free)/mean(meanGenPred(binCons));
+meanGenPredPara = wmean(meanGenPred,para)/mean(meanGenPred(binCons));
 
 %out degree (vulnerability)
 vul = full(sum(A,2));
-vul = vul./mean(vul(binCons));
+vul = vul./mean(vul);
+vulFree = wmean(vul,free)/mean(vul(binCons));
+vulPara = wmean(vul,para)/mean(vul(binCons));
 
-vulPara = wmean(vul,para);
-vulFree = wmean(vul,free);
 
 %Mean vulnerability of prey
 %Mean topological fraction of preys' binConsumers
@@ -102,16 +105,14 @@ for ii = 1:S
     prey_ii = res(con==ii);
     vulPrey_ii = vul(prey_ii);
     meanVulPrey(ii) = mean(vulPrey_ii);
+    if numel(vulPrey_ii)==0
+        meanVulPrey(ii) = 0;
+    end
 end
 
-meanVulPrey = meanVulPrey/mean(meanVulPrey(binCons));
-meanVulPreyFree = wmean(meanVulPrey,free);
-meanVulPreyPara = wmean(meanVulPrey,para);
-
-if sum(isnan(meanVulPrey)>0)
-    fprintf('wtfmate\n')
-    
-end
+meanVulPrey = meanVulPrey/mean(meanVulPrey,'omitnan');
+meanVulPreyFree = wmean(meanVulPrey,free)/mean(meanVulPrey(binCons));
+meanVulPreyPara = wmean(meanVulPrey,para)/mean(meanVulPrey(binCons));
 
 %Formula for the prey-averaged trophic level.
 %no cannibalism in this matrix; think it's better this way:
@@ -119,60 +120,33 @@ A(((1:S)-1)*S+(1:S)) = 0;
 patl_mx = sparse(A)*(diag(1./sum(sparse(A))));
 
 patl = (speye(S)-patl_mx')\ones(S,1);
-patl = patl./mean(patl(binCons));
-
-patlPara = wmean(patl,para);
-patlFree = wmean(patl,free);
+patlFree = wmean(patl,free)/mean(patl(binCons));
+patlPara = wmean(patl,para)/mean(patl(binCons));
 
 %Clustering Coefficient(s)
 cc = clustering_coefficients(sparse(A));
-cc = cc./mean(cc(binCons));
+ccFree = wmean(cc,free)/mean(cc(binCons));
+ccPara = wmean(cc,para)/mean(cc(binCons));
 
-ccPara = wmean(cc,para);
-ccFree = wmean(cc,free);
-
+%These take a ton of time; would be better if I could do this faster.. oh
+%well.
 %Betweenness
 btwns = btwn(res,con);
-btwns = btwns./mean(btwns(binCons));
-btwnFree = wmean(btwns,free);
-btwnPara = wmean(btwns,para);
+btwns = (btwns-min(btwns))/max(btwns);
+btwnsFree = wmean(btwns,free)/mean(btwns(binCons));
+btwnsPara = wmean(btwns,para)/mean(btwns(binCons));
 
 %Ecological Betweenness
 ecoBtwns = ecoBtwn(res,con);
-ecoBtwns = ecoBtwns./mean(ecoBtwns(binCons));
-ecoBtwnFree = wmean(ecoBtwns,free);
-ecoBtwnPara = wmean(ecoBtwns,para);
+ecoBtwns = (ecoBtwns-min(ecoBtwns))/max(ecoBtwns);
+ecoBtwnsFree = wmean(ecoBtwns,free)/mean(ecoBtwns(binCons));
+ecoBtwnsPara = wmean(ecoBtwns,para)/mean(ecoBtwns(binCons));
 
 %Ecological Pagerank
 pr = pageRank(res,con);
-pr = pr./mean(pr(binCons));
-prFree = wmean(pr,free);
-prPara = wmean(pr,para);
+prFree = wmean(pr,free)/mean(pr(binCons));
+prPara = wmean(pr,para)/mean(pr(binCons));
 
-
-localProperties = [     
-                         vulFree...                 1
-                        ,vulPara...                 2
-                        ,genFree...                 3
-                        ,genPara...                 4
-                        ,patlFree...                5
-                        ,patlPara...                6
-                        ,ccFree...                  7
-                        ,ccPara...                  8
-                        ,prFree...                  9
-                        ,prPara...                  10
-                        ,btwnFree...                11
-                        ,btwnPara...                12
-                        ,ecoBtwnFree...             13
-                        ,ecoBtwnPara...             14
-                        ,meanVulPreyFree...         15
-                        ,meanVulPreyPara...         16
-                        ,meanGenPredFree...         17
-                        ,meanGenPredPara...         18
-                    ];
-
-pearCorr = corr([vul,gen,patl,cc,pr,btwns,ecoBtwns,meanVulPrey,meanGenPred]);
-spearCorr = corr([vul,gen,patl,cc,pr,btwns,ecoBtwns,meanVulPrey,meanGenPred],'type','Spearman');
 C = L/S^2;
 
 Lcon = sum(sum(A(binCons,binCons)));
@@ -201,8 +175,28 @@ fPar = Sp/(Sp+Sf);
 top = sum(vul == 0)/S;
 bas = sum(gen==0)/S;
 int = 1-top-bas;
-herb = sum(patl==2)/S;
-omn = sum(mod(patl,1)>.01)/S;
+herb = sum(abs(patl-2)<1e-2)/S;
+omn = sum(mod(patl,1)>1e-2)/S;
+
+para = para/nodeSize;
+free = free/nodeSize;
+
+localProperties = [     
+                         vul...                 1
+                        ,gen...                 2
+                        ,patl...                3
+                        ,cc...                  4
+                        ,pr...                  5
+                        ,btwns...               6
+                        ,ecoBtwns...            7
+                        ,meanVulPrey...         8
+                        ,meanGenPred...         9
+                        ,para...                10
+                        ,free...                11
+                        ,repmat(S,S,1)...       12
+                        ,repmat(C,S,1)...       13
+                        ,nodeSize...            14
+                    ];
 
 globalProperties = [
                    S...             1   
@@ -220,6 +214,29 @@ globalProperties = [
                   ,herb...          13
                   ,omn...           14
                   ,C...             15
+                  ,minDistance...   16
                       ];     
-
+localMeans = [                 
+                 vulFree...                 1
+                ,vulPara...                 2
+                ,genFree...                 3
+                ,genPara...                 4
+                ,patlFree...                5
+                ,patlPara...                6
+                ,ccFree...                  7
+                ,ccPara...                  8
+                ,prFree...                  9
+                ,prPara...                  10
+                ,btwnsFree...               11
+                ,btwnsPara...               12
+                ,ecoBtwnsFree...            13
+                ,ecoBtwnsPara...            14
+                ,meanVulPreyFree...         15
+                ,meanVulPreyPara...         16
+                ,meanGenPredFree...         17
+                ,meanGenPredPara...         18
+                ,S...                       19
+                ,C...                       20
+                ,minDistance...             21
+            ];
 end

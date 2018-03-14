@@ -1,72 +1,80 @@
-webs = 1:12;
+load('data/Processed/webGeneration.mat')
+webs = 1:6;
 nWebs = numel(webs);
-props = cell(nWebs,1);
+propsLocal = cell(nWebs,1);
+propsGlobal = cell(nWebs,1);
+propsLocalMeans = cell(nWebs,1);
+adjMatrices = cell(nWebs,1);
 
 numLocalProps = 18;
 numGlobalProps = 15;
 
-localNames = {'vulFree' ...
-            ,'vulPara'        ...
-            ,'genFree'        ...
-            ,'genPara'        ...
-            ,'patlFree'       ...
-            ,'patlPara'       ...
-            ,'ccFree'         ...
-            ,'ccPara'         ...
-            ,'prFree'         ...
-            ,'prPara'         ...
-            ,'btwnFree'       ...
-            ,'btwnPara'       ...
-            ,'ecoBtwnFree'    ...
-            ,'ecoBtwnPara'    ...
-            ,'meanVulPreyFree'...
-            ,'meanVulPreyPara'...
-            ,'meanGenPredFree'...
-            ,'meanGenPredPara'...
-            };
+localNames = {'web'           ...1
+                ,'vul'        ...2
+                ,'gen'        ...3
+                ,'patl'       ...4
+                ,'cc'         ...5
+                ,'pr'         ...6
+                ,'btwn'       ...7
+                ,'ecoBtwn'    ...8
+                ,'meanVulPrey'...9
+                ,'meanGenPred'...10
+                ,'para'       ...11
+                ,'free'       ...12
+                ,'S'          ...13
+                ,'size'       ...14
+                };
 
 
-globalNames = {  'S'            ...
-              ,'nNodes'         ...
-              ,'Ccon'           ...
-              ,'Cff'            ...
-              ,'Cpp'            ...
-              ,'Cfp'            ...
-              ,'Cpf'            ...
-              ,'fPar'           ...
-              ,'numLargest'     ...
-              ,'n'              ...
-              ,'top'            ...
-              ,'int'            ...
-              ,'bas'            ...
-              ,'herb'           ...
-              ,'omn'            ...
-              ,'C'              ...
+globalNames = { 'web'           ...1
+              ,'S'              ...2
+              ,'Ccon'           ...3
+              ,'Cff'            ...4
+              ,'Cpp'            ...5
+              ,'Cfp'            ...6
+              ,'Cpf'            ...7
+              ,'fPar'           ...8
+              ,'numLargest'     ...9
+              ,'n'              ...10
+              ,'top'            ...11
+              ,'int'            ...12
+              ,'bas'            ...13
+              ,'herb'           ...14
+              ,'omn'            ...15
+              ,'C'              ...16
+              ,'d_J'            ...17
               };
-
-
-propStruct = struct('global',[]...
-                       ,'local',[]...
-                       ,'corrMatrices',[]...
-                       );
-
-meanVarStructure = struct('sum',propStruct...
-                          ,'sq',propStruct...
-                          ,'mean',propStruct...
-                          ,'var',propStruct...
-                         );
-                   
-linkageStructure = struct('max',meanVarStructure...
-                          ,'mean',meanVarStructure...
-                          ,'min',meanVarStructure...
-                              );
-
-[props{:}] = deal(linkageStructure);
-nReps = 50;
+localMeanNames = {
+                 'web'...                     1
+                ,'vulFree'...                 2
+                ,'vulPara'...                 3
+                ,'genFree'...                 4
+                ,'genPara'...                 5
+                ,'patlFree'...                6
+                ,'patlPara'...                7
+                ,'ccFree'...                  8
+                ,'ccPara'...                  9
+                ,'prFree'...                  10
+                ,'prPara'...                  11
+                ,'btwnsFree'...               12
+                ,'btwnsPara'...               13
+                ,'ecoBtwnsFree'...            14
+                ,'ecoBtwnsPara'...            15
+                ,'meanVulPreyFree'...         16
+                ,'meanVulPreyPara'...         17
+                ,'meanGenPredFree'...         18
+                ,'meanGenPredPara'...         19
+                ,'S'...                       20
+                ,'C'...                       21
+                ,'minDistance'...             22
+            };
+nReps = 1;
 for ii = webs
     ii
     %This replicates the agglomeration procedure; account for any
-    %randomness in the agglomeration method.
+    %randomness in the agglomeration method (there is very little for the
+    %empirical webs (could get a precise number...) so don't worry about 
+    %that for now.
     if ii <7
         res = linkListCell{ii}(:,1);
         con = linkListCell{ii}(:,2);
@@ -87,25 +95,6 @@ for ii = webs
     end
     
     
-     localZeros = zeros(S,numLocalProps);
-     globalZeros = zeros(S,numGlobalProps+1);
-     corrZeros = zeros(9,9,S);
-    [props{ii}.max.sum.global,...
-     props{ii}.max.sq.global,...
-     props{ii}.mean.sum.global,...
-     props{ii}.mean.sq.global,...
-     props{ii}.min.sum.global,...
-     props{ii}.min.sq.global] = deal(globalZeros);
-    
-     [props{ii}.max.sum.local,...
-     props{ii}.max.sq.local,...
-     props{ii}.mean.sum.local,...
-     props{ii}.mean.sq.local,...
-     props{ii}.min.sum.local,...
-     props{ii}.min.sq.local] = deal(localZeros);
-    
-    [props{ii}.max.sum.corr,...
-        props{ii}.max.sq.corr] = deal(corrZeros);
     for jj = 1:nReps
         if ii >= 7
             
@@ -116,67 +105,31 @@ for ii = webs
             nPar = round(fPar*nCon);
             paraIds = randsample(consumers,nPar);
             para(paraIds) = true;
+            
+            %Do something about the replications.
+        else
+        [properties, adjMatrices{ii}] = agglom(res,con,para);
+        propsLocal{ii} = [repmat(ii,length(properties.local),1),properties.local];
+        propsGlobal{ii} = [repmat(ii,length(properties.global),1), properties.global];
+        propsLocalMeans{ii} = [repmat(ii,length(properties.localMeans),1), properties.localMeans];
         end
-        [propMax, propMean, propMin] = agglom(res,con,para);
-        %
-        props{ii}.max.sum.global= props{ii}.max.sum.global+ propMax.global;
-        props{ii}.max.sq.global= props{ii}.max.sq.global+ propMax.global.^2;
         
-        props{ii}.max.sum.local = props{ii}.max.sum.local+propMax.local;
-        props{ii}.max.sq.local = props{ii}.max.sq.local+propMax.local.^2;
-        
-        props{ii}.max.sum.corr = props{ii}.max.sum.corr + propMax.corr;
-        props{ii}.max.sq.corr = props{ii}.max.sq.corr + propMax.corr.^2;
-        
-        %{
-        props{ii}.mean.sum.global= props{ii}.mean.sum.global+ propMean.global;
-        props{ii}.mean.sq.global= props{ii}.mean.sq.global+ propMean.global.^2;
-        
-        props{ii}.mean.sum.local = props{ii}.mean.sum.local+propMean.local;
-        props{ii}.mean.sq.local = props{ii}.mean.sq.local+propMean.local.^2;
-        %
-        props{ii}.min.sum.global= props{ii}.min.sum.global+ propMin.global;
-        props{ii}.min.sq.global= props{ii}.min.sq.global+ propMin.global.^2;
-        
-        props{ii}.min.sum.local = props{ii}.min.sum.local+propMin.local;
-        props{ii}.min.sq.local = props{ii}.min.sq.local+propMin.local.^2;
-        %}
     end
-    
-    props{ii}.max.mean.global = props{ii}.max.sum.global/nReps;
-    props{ii}.max.var.global = props{ii}.max.sq.global/(nReps-1) - (nReps/(nReps - 1))*props{ii}.max.mean.global.^2;
-    props{ii}.max.mean.global = array2table(props{ii}.max.mean.global,'VariableNames',globalNames);
-    props{ii}.max.var.global = array2table(props{ii}.max.var.global,'VariableNames',globalNames); 
-    
-    props{ii}.max.mean.local = props{ii}.max.sum.local/nReps;
-    props{ii}.max.var.local = props{ii}.max.sq.local/(nReps-1) - (nReps/(nReps - 1))*props{ii}.max.mean.local.^2;
-    props{ii}.max.mean.local = array2table(props{ii}.max.mean.local,'VariableNames',localNames);
-    props{ii}.max.var.local = array2table(props{ii}.max.var.local,'VariableNames',localNames); 
-    
-    props{ii}.max.mean.corrMatrices = props{ii}.max.sum.corrMatrices/nReps;
-    props{ii}.max.var.local = props{ii}.max.sq.corrMatrices/(nReps-1) - (nReps/(nReps - 1))*props{ii}.max.mean.corrMatrices.^2;
-    %{
-    props{ii}.mean.mean.global = props{ii}.mean.sum.global/nReps;
-    props{ii}.mean.var.global = props{ii}.mean.sq.global/(nReps-1) - (nReps/(nReps - 1))*props{ii}.mean.mean.global.^2;
-    props{ii}.mean.mean.global = array2table(props{ii}.mean.mean.global,'VariableNames',globalNames);
-    props{ii}.mean.var.global = array2table(props{ii}.mean.var.global,'VariableNames',globalNames); 
-    
-    props{ii}.mean.mean.local = props{ii}.mean.sum.local/nReps;
-    props{ii}.mean.var.local = props{ii}.mean.sq.local/(nReps-1) - (nReps/(nReps - 1))*props{ii}.mean.mean.local.^2;
-    props{ii}.mean.mean.local = array2table(props{ii}.mean.mean.local,'VariableNames',localNames);
-    props{ii}.mean.var.local = array2table(props{ii}.mean.var.local,'VariableNames',localNames); 
-    %
-    props{ii}.min.mean.global = props{ii}.min.sum.global/nReps;
-    props{ii}.min.var.global = props{ii}.min.sq.global/(nReps-1) - (nReps/(nReps - 1))*props{ii}.min.mean.global.^2;
-    props{ii}.min.mean.global = array2table(props{ii}.min.mean.global,'VariableNames',globalNames);
-    props{ii}.min.var.global = array2table(props{ii}.min.var.global,'VariableNames',globalNames); 
-    
-    props{ii}.min.mean.local = props{ii}.min.sum.local/nReps;
-    props{ii}.min.var.local = props{ii}.min.sq.local/(nReps-1) - (nReps/(nReps - 1))*props{ii}.min.mean.local.^2;
-    props{ii}.min.mean.local = array2table(props{ii}.min.mean.local,'VariableNames',localNames);
-    props{ii}.min.var.local = array2table(props{ii}.min.var.local,'VariableNames',localNames); 
-    %}
-    %}
 end
 
-save('AgglomerationProps.mat','props')
+
+localCol = containers.Map(localNames, 1:numel(localNames));
+globalCol = containers.Map(globalNames, 1:numel(globalNames));
+localMeansCol = containers.Map(localMeanNames, 1:numel(localMeanNames));
+propsLocal = cell2mat(propsLocal);
+propsGlobal = cell2mat(propsGlobal);
+propsLocalMeans = cell2mat(propsLocalMeans);
+save('AgglomerationProps.mat'...
+            ,'propsLocal'...
+            ,'propsGlobal'...
+            ,'propsLocalMeans'...
+            ,'adjMatrices'...
+            ,'localCol'...
+            ,'globalCol'...
+            ,'localMeansCol'...
+            )
