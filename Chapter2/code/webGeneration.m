@@ -40,7 +40,7 @@
 
     numColNodes = [46,46,46,41,41,41,46];
 
-    nWebs = 7;
+    nWebs = 6;
     
     if ~exist('concomittantWebs','var')
         concomittantWebs = false;

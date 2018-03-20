@@ -6,7 +6,15 @@ nParasitesPerNode = para0+0;
 para0=para0+0;
 
 A = sparse(res,con,1,S,S);
-[nodalProps,globalProps,localMeans] = agglomProps(A,para0,nSpeciesPerNode,0);
+basal = full((sum(A)==0)');
+carn0 = true(S,1);
+carn0(con(basal(res))) = false;
+carn0(basal) = false;
+carn0(para0>0) = false;
+
+carn0 = carn0+0;
+nCarnivoresPerNode = carn0;
+[nodalProps,globalProps,localMeans] = agglomProps(A,para0,carn0,nSpeciesPerNode,0);
 
 [S,nLocalProps] = size(nodalProps);
 nGlobalProps = length(globalProps);
@@ -184,11 +192,15 @@ while nNodes > 10
         
         nSpeciesPerNode(J(1)) = nSpeciesPerNode(J(1)) + nSpeciesPerNode(I(1));
         nParasitesPerNode(J(1)) = nParasitesPerNode(J(1)) + nParasitesPerNode(I(1));
+        nCarnivoresPerNode(J(1)) = nCarnivoresPerNode(J(1)) + nCarnivoresPerNode(I(1));
         
         nSpeciesPerNode(I(1)) = [];
         nParasitesPerNode(I(1)) = [];
+        nCarnivoresPerNode(I(1)) = [];
         
         para = nParasitesPerNode./nSpeciesPerNode;
+        carn = nCarnivoresPerNode./nSpeciesPerNode;
+        
         %Max Linkage Criterion
         A = linkageMatrix>0;
         adjacencyMatrixCell{ii} = A;
@@ -204,7 +216,7 @@ while nNodes > 10
         A = linkageMatrix==maxLinkageMatrix;
         %}
         %
-        [localProps, globalProps, localMeans] = agglomProps(A,para,nSpeciesPerNode,minDistance);
+        [localProps, globalProps, localMeans] = agglomProps(A,para,carn,nSpeciesPerNode,minDistance);
         startHere = startingPoints(nNodes==findStartingPoints);
         endHere = startHere+nNodes-1;
         

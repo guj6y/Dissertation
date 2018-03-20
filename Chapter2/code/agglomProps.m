@@ -1,4 +1,4 @@
-function [localProperties,globalProperties,localMeans] = agglomProps(A,para,nodeSize,minDistance)
+function [localProperties,globalProperties,localMeans] = agglomProps(A,para,carn,nodeSize,minDistance)
 
 %Check for the connected component; don't worry about the web having basal
 %species, etc. since we are not trying to develop a dynamical model for
@@ -55,24 +55,29 @@ S = length(A);
 L = sum(sum(A));
 
 %In degree (generality)
-gen = full(sum(A));
-gen = gen';
+gen0 = full(sum(A))';
+
 
 %This defines parasite cutoffs; without this line we calculate weighted
 %averages:
 binPara = para>0.5;
-basal = gen==0;
+basal = gen0==0;
 binFree = ~binPara;
 binFree(basal) = false;
 binCons = (~basal);
+%Identify carnivores Only!
+binCarns = true(S,1);
+binCarns(con(basal(res))) = false;
 
 free = 1-para;
 free(basal) = 0;
 
-para = para*nodeSize;
-free = free*nodeSize;
+para = para.*nodeSize;
+%Pick the appropriate other comparison.
+%free = free*nodeSize;
+free = carn.*nodeSize;
 
-gen = gen./(mean(gen));
+gen = gen0./(mean(gen0));
 genFree = wmean(gen,free)/mean(gen(binCons));
 genPara = wmean(gen,para)/mean(gen(binCons));
 
@@ -92,8 +97,8 @@ meanGenPredFree = wmean(meanGenPred,free)/mean(meanGenPred(binCons));
 meanGenPredPara = wmean(meanGenPred,para)/mean(meanGenPred(binCons));
 
 %out degree (vulnerability)
-vul = full(sum(A,2));
-vul = vul./mean(vul);
+vul0 = full(sum(A,2));
+vul = vul0./mean(vul0);
 vulFree = wmean(vul,free)/mean(vul(binCons));
 vulPara = wmean(vul,para)/mean(vul(binCons));
 
@@ -114,22 +119,52 @@ meanVulPrey = meanVulPrey/mean(meanVulPrey,'omitnan');
 meanVulPreyFree = wmean(meanVulPrey,free)/mean(meanVulPrey(binCons));
 meanVulPreyPara = wmean(meanVulPrey,para)/mean(meanVulPrey(binCons));
 
-%Formula for the prey-averaged trophic level.
-%no cannibalism in this matrix; think it's better this way:
-A(((1:S)-1)*S+(1:S)) = 0; 
-patl_mx = sparse(A)*(diag(1./sum(sparse(A))));
 
-patl = (speye(S)-patl_mx')\ones(S,1);
+%PreyAveraged Trophic LEvel
+A(eye(S)>0) = 0;
+A = sparse(A);
+paTL_mx = sparse(A*(diag(1./sum(A))));
+patl = (speye(S)-paTL_mx')\ones(S,1);
+
 patlFree = wmean(patl,free)/mean(patl(binCons));
 patlPara = wmean(patl,para)/mean(patl(binCons));
 
+%What follows is various ccs from an arxiv paper:
 %Clustering Coefficient(s)
-cc = clustering_coefficients(sparse(A));
-ccFree = wmean(cc,free)/mean(cc(binCons));
-ccPara = wmean(cc,para)/mean(cc(binCons));
+A = A*1;
+A2 = full(A^2);
+d2 = diag(A2);
+nNayb = gen0+vul0;
+Asym = A+A';
+cc0 = full(diag((Asym)^3)./(2*(nNayb).*(nNayb-1)-2*d2));
+cc0(isnan(cc0))= 0;
+cc0Free = wmean(cc0,free)/mean(cc0(binCons));
+cc0Para = wmean(cc0,para)/mean(cc0(binCons));
 
-%These take a ton of time; would be better if I could do this faster.. oh
-%well.
+%Cyclic; 
+ccCyc = full(diag(A*A2))./(gen0.*vul0-d2);
+ccCyc(isnan(ccCyc)) = 0;
+ccCycFree = wmean(ccCyc,free)/mean(ccCyc(binCons));
+ccCycPara = wmean(ccCyc,para)/mean(ccCyc(binCons));
+%middleman
+ccMid = full(diag((A*A')*A))./(gen0.*vul0-d2);
+ccMid(isnan(ccMid)) = 0;
+ccMidFree = wmean(ccMid,free)/mean(ccMid(binCons));
+ccMidPara = wmean(ccMid,para)/mean(ccMid(binCons));
+%innie
+ccIn = full(diag(A'*A2))./(gen0.*(gen0-1));
+ccIn(isnan(ccIn)) = 0;
+ccInFree = wmean(ccIn,free)/mean(ccIn(binCons));
+ccInPara = wmean(ccIn,para)/mean(ccIn(binCons));
+%outie
+ccOut = full(diag(A2*A'))./(vul0.*(vul0-1));
+ccOut(isnan(ccOut)) = 0;
+ccOutFree = wmean(ccOut,free)/mean(ccOut(binCons));
+ccOutPara = wmean(ccOut,para)/mean(ccOut(binCons));
+
+%betweenness takes a ton of time; would be better if I could do this 
+%faster.. oh well.
+
 %Betweenness
 btwns = btwn(res,con);
 btwns = (btwns-min(btwns))/max(btwns);
@@ -178,14 +213,14 @@ int = 1-top-bas;
 herb = sum(abs(patl-2)<1e-2)/S;
 omn = sum(mod(patl,1)>1e-2)/S;
 
-para = para/nodeSize;
-free = free/nodeSize;
+para = para./nodeSize;
+free = free./nodeSize;
 
 localProperties = [     
                          vul...                 1
                         ,gen...                 2
                         ,patl...                3
-                        ,cc...                  4
+                        ,cc0...                 4
                         ,pr...                  5
                         ,btwns...               6
                         ,ecoBtwns...            7
@@ -196,6 +231,10 @@ localProperties = [
                         ,repmat(S,S,1)...       12
                         ,repmat(C,S,1)...       13
                         ,nodeSize...            14
+                        ,ccCyc...                 15
+                        ,ccMid...                 16
+                        ,ccIn...                 17
+                        ,ccOut...                 18
                     ];
 
 globalProperties = [
@@ -223,8 +262,8 @@ localMeans = [
                 ,genPara...                 4
                 ,patlFree...                5
                 ,patlPara...                6
-                ,ccFree...                  7
-                ,ccPara...                  8
+                ,cc0Free...                  7
+                ,cc0Para...                  8
                 ,prFree...                  9
                 ,prPara...                  10
                 ,btwnsFree...               11
@@ -238,5 +277,13 @@ localMeans = [
                 ,S...                       19
                 ,C...                       20
                 ,minDistance...             21
+                ,ccCycFree...                 22
+                ,ccCycPara...                 23
+                ,ccMidFree...                 24
+                ,ccMidPara...                 25
+                ,ccInFree...                 26
+                ,ccInPara...                 27
+                ,ccOutFree...                 28
+                ,ccOutPara...                 29
             ];
 end

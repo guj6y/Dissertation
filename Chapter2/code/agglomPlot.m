@@ -23,6 +23,10 @@ localNames = {'web'           ...1
                 ,'free'       ...12
                 ,'S'          ...13
                 ,'size'       ...14
+                ,'ccCyc'        ...15
+                ,'ccMid'        ...16
+                ,'ccIn'        ...17
+                ,'ccOut'        ...18
                 };
 
 
@@ -67,6 +71,14 @@ localMeanNames = {
                 ,'S'...                       20
                 ,'C'...                       21
                 ,'minDistance'...             22
+                ,'ccCycFree'        ...       23
+                ,'ccCycPara'        ...       24
+                ,'ccMidFree'        ...       25
+                ,'ccMidPara'        ...       26
+                ,'ccInFree'        ...        27
+                ,'ccInPara'        ...        28
+                ,'ccOutFree'        ...       29
+                ,'ccOutPara'        ...       30
             };
 nReps = 1;
 for ii = webs
