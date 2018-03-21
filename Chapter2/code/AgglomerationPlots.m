@@ -226,32 +226,6 @@ for jj = 1:nLocalPropsPlotted
     hold off
     title(fancyLocalNames{jj},'Interpreter','LaTeX')
     
-    figure(localFigRelNodeLevel) 
-    for ii = 1:nWebs
-        subplot(3,4,jj);
-        hold on
-        %{
-        hEveryWeb{jj,ii} = plot(localMeans(beginnings(ii):endings(ii),localMeanCol('minDistance')),freesThisProperty(beginnings(ii):endings(ii))...
-            ,localMeans(beginnings(ii):endings(ii),localMeanCol('minDistance')),parasThisProperty(beginnings(ii):endings(ii))...
-            );
-        set(hEveryWeb{jj,ii},{'LineWidth'},{.5;.5})
-        set(hEveryWeb{jj,ii},{'Color'},{[.7,.7,1];[1 .7 1]})
-        %}
-        q = plot(1-allNodeLevels(beginnings(ii):endings(ii))/allNodeLevels(beginnings(ii)),freesThisProperty(beginnings(ii):endings(ii))...
-            - parasThisProperty(beginnings(ii):endings(ii))...
-            );
-        if ii == 4
-            q.Color = 'r';
-        else
-            q.Color =[.5,.5,.5];
-        end
-        hold off
-    end
-    q = refline(0,0);
-    q.LineStyle = '--';
-    q.Color = 'k';
-    title(fancyLocalNames{jj},'Interpreter','LaTeX')
-    
     figure(localFigFirst);
     xs = localMeans(selectThisLevelGlobal,localMeanCol(localPropsPlottedFree{jj}));
     ys = localMeans(selectThisLevelGlobal,localMeanCol(localPropsPlottedPara{jj}));
@@ -261,6 +235,8 @@ for jj = 1:nLocalPropsPlotted
     
     subplot(3,4,jj);
     h = gscatter(xs,ys,gps,markColors,'.',markSizes,'off');
+    xlabel('Carnivore Average')
+    ylabel('Parasite Average')
     title(fancyLocalNames{jj},'Interpreter','LaTeX')
     if jj == 8
         xlabel('Carnivore Average')
@@ -394,6 +370,8 @@ for jj = 1:nLocalPropsPlotted
         rl.LineStyle = '--';
         yl = ylim();
         ylim(yl);
+        xlabel('Min. Cluster Distance')
+        ylabel('Carnivore $-$ Parasite','Interpreter','LaTeX')
         hold off
         
         figure(localFigAll);
@@ -409,7 +387,8 @@ for jj = 1:nLocalPropsPlotted
         rl.Color = [.5,.5,.5];
         rl.LineStyle = '--';
         yl = ylim();
-        plot([Ss(end);Ss(end)],[yl(1);yl(2)],'Color',[.6,.6,.6])
+        plot([Ss(end);Ss(end)],[yl(1) ;yl(2)],'Color',[.6,.6,.6])
+        axis([0,max(Ss) ylim]);
         ylim(yl);
         hold off
 end
