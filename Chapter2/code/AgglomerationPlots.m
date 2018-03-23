@@ -1,7 +1,7 @@
 clear
 
 load('data/Processed/webGeneration.mat')
-T = load('AgglomerationProps.mat');
+T = load('AgglomerationPropsMajority.mat');
 
 propsLocal = T.propsLocal;
 propsGlobal = T.propsGlobal;
@@ -87,11 +87,18 @@ plottingInitial = true;
 initialSizes = propsGlobal(arrayfun(@(x) find(propsGlobal(:,globalCol('web'))==x,1),webs),globalCol('S'));
 if plottingInitial
     selectThisLevelGlobal = arrayfun(@(x) find(propsGlobal(:,globalCol('web'))==x,1),webs);
+    Ss = propsGlobal(selectThisLevelGlobal,globalCol('S'));
+    selectThisLevelLocal = arrayfun(@(x,y) (propsLocal(:,localCol('S'))==y)&(propsLocal(:,localCol('web'))==x),webs',Ss,'UniformOutput',false);
+    initialWebs = sum(cell2mat(selectThisLevelLocal'),2)>0;
+    initialWebsPropsLocal = propsLocal(initialWebs,:);
 else
     plotAtThisLevel = 50;
     selectThisLevelLocal = propsLocal(:,localCol('S')) == plotAtThisLevel;
     selectThisLevelGlobal = propsGlobal(:,globalCol('S')) == plotAtThisLevel;
 end
+initCarn = (initialWebsPropsLocal(:,localCol('free'))>0.5);
+initPara = (initialWebsPropsLocal(:,localCol('para'))>=0.5);
+initCarnOrPara = initCarn|initPara;
 
 Ss = propsGlobal(selectThisLevelGlobal,globalCol('S'));
 Cs = propsGlobal(selectThisLevelGlobal,globalCol('C'));
@@ -262,6 +269,7 @@ for jj = 1:nLocalPropsPlotted
     rl = refline(1,0);
     rl.Color = [.9,.9,.9];
     uistack(h,'top')
+    
         
 end
     
@@ -427,11 +435,11 @@ set(localFigAll, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
 set(localFigDistance, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
 %
 figure(localFigFirst);
-print('../figures/initialProps.png','-dpng','-r0')
+print('../figures/initialPropsMajority.png','-dpng','-r0')
 figure(localFigAll);
-print('../figures/allProps.png','-dpng','-r0')
+print('../figures/allPropsMajority.png','-dpng','-r0')
 figure(localFigDistance);
-print('../figures/allPropsDist.png','-dpng','-r0')
+print('../figures/allPropsDistMajority.png','-dpng','-r0')
 %}
 %}
 %{

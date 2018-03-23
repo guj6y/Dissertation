@@ -1,4 +1,5 @@
-load('data/Processed/webGenerationEctoInverts.mat')
+load('data/Processed/webGeneration.mat')
+%load('data/Processed/webGenerationEctoInvert.mat')
 webs = 1:6;
 nWebs = numel(webs);
 propsLocal = cell(nWebs,1);
@@ -22,11 +23,12 @@ localNames = {'web'           ...1
                 ,'para'       ...11
                 ,'free'       ...12
                 ,'S'          ...13
+                ,'C'          ...14
                 ,'size'       ...14
-                ,'ccCyc'        ...15
-                ,'ccMid'        ...16
-                ,'ccIn'        ...17
-                ,'ccOut'        ...18
+                ,'ccCyc'      ...15
+                ,'ccMid'      ...16
+                ,'ccIn'       ...17
+                ,'ccOut'      ...18
                 };
 
 
@@ -136,7 +138,8 @@ localMeansCol = containers.Map(localMeanNames, 1:numel(localMeanNames));
 propsLocal = cell2mat(propsLocal);
 propsGlobal = cell2mat(propsGlobal);
 propsLocalMeans = cell2mat(propsLocalMeans);
-save('AgglomerationPropsEctoInverts.mat'...
+save('AgglomerationPropsMajority.mat'...
+    ...'AgglomerationPropsEctoInvert.mat'
             ,'propsLocal'...
             ,'propsGlobal'...
             ,'propsLocalMeans'...

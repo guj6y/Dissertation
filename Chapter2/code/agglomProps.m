@@ -48,6 +48,9 @@ winners = grps==largeComp;
 A = A(winners,winners);
 [res,con] = find(A);
 para = para(winners);
+carn = carn(winners);
+nodeSize = nodeSize(winners);
+
 
 
 %Now, we calculate properties using the largest connected component.
@@ -69,17 +72,22 @@ binCons = (~basal);
 binCarns = true(S,1);
 binCarns(con(basal(res))) = false;
 
-free = 1-para;
-free(basal) = 0;
 
-para = para.*nodeSize;
-%Pick the appropriate other comparison.
-%free = free*nodeSize;
-free = carn.*nodeSize;
-
-gen = gen0./(mean(gen0));
-genFree = wmean(gen,free)/mean(gen(binCons));
-genPara = wmean(gen,para)/mean(gen(binCons));
+weighted=false;
+if weighted
+    %Weigthing Option:
+    %Pick the appropriate other comparison.
+    %free = free*nodeSize;
+    carn = carn.*nodeSize;
+    para = para.*nodeSize;
+else
+    %Majority Option:
+    carn = carn>0.5;
+    para = para>=0.5;
+end
+gen = (gen0-mean(gen0))/std(gen0);
+genFree = wmean(gen,carn);
+genPara = wmean(gen,para);
 
 %Mean generality of predators
 %Mean topological fraction of predators' diet
@@ -92,15 +100,15 @@ for ii = 1:S
         meanGenPred(ii) = 0;
     end
 end
-meanGenPred = meanGenPred./mean(meanGenPred);
-meanGenPredFree = wmean(meanGenPred,free)/mean(meanGenPred(binCons));
-meanGenPredPara = wmean(meanGenPred,para)/mean(meanGenPred(binCons));
+meanGenPred = (meanGenPred)/mean(meanGenPred,'omitnan');
+meanGenPredFree = wmean(meanGenPred,carn);
+meanGenPredPara = wmean(meanGenPred,para);
 
 %out degree (vulnerability)
 vul0 = full(sum(A,2));
-vul = vul0./mean(vul0);
-vulFree = wmean(vul,free)/mean(vul(binCons));
-vulPara = wmean(vul,para)/mean(vul(binCons));
+vul = (vul0)/mean(vul0);
+vulFree = wmean(vul,carn);
+vulPara = wmean(vul,para);
 
 
 %Mean vulnerability of prey
@@ -115,9 +123,9 @@ for ii = 1:S
     end
 end
 
-meanVulPrey = meanVulPrey/mean(meanVulPrey,'omitnan');
-meanVulPreyFree = wmean(meanVulPrey,free)/mean(meanVulPrey(binCons));
-meanVulPreyPara = wmean(meanVulPrey,para)/mean(meanVulPrey(binCons));
+meanVulPrey = (meanVulPrey-mean(meanVulPrey,'omitnan'))/std(meanVulPrey,'omitnan');
+meanVulPreyFree = wmean(meanVulPrey,carn);
+meanVulPreyPara = wmean(meanVulPrey,para);
 
 
 %PreyAveraged Trophic LEvel
@@ -125,9 +133,32 @@ A(eye(S)>0) = 0;
 A = sparse(A);
 paTL_mx = sparse(A*(diag(1./sum(A))));
 patl = (speye(S)-paTL_mx')\ones(S,1);
+patl = (patl-1)/mean(patl-1);
+patlFree = wmean(patl,carn);
+patlPara = wmean(patl,para);
 
-patlFree = wmean(patl,free)/mean(patl(binCons));
-patlPara = wmean(patl,para)/mean(patl(binCons));
+
+
+%betweenness takes a ton of time; would be better if I could do this 
+%faster.. oh well.
+
+%Betweenness
+btwns = btwn(res,con);
+btwns = (btwns)/mean(btwns,'omitnan');
+btwnsFree = wmean(btwns,carn);
+btwnsPara = wmean(btwns,para);
+
+%Ecological Betweenness
+ecoBtwns = ecoBtwn(res,con);
+ecoBtwns = (ecoBtwns)/mean(ecoBtwns,'omitnan');
+ecoBtwnsFree = wmean(ecoBtwns,carn);
+ecoBtwnsPara = wmean(ecoBtwns,para);
+
+%Ecological Pagerank
+pr = log(pageRank(res,con));
+pr = (pr)/mean(pr,'omitnan');
+prFree = wmean(pr,carn);
+prPara = wmean(pr,para);
 
 %What follows is various ccs from an arxiv paper:
 %Clustering Coefficient(s)
@@ -137,61 +168,60 @@ d2 = diag(A2);
 nNayb = gen0+vul0;
 Asym = A+A';
 cc0 = full(diag((Asym)^3)./(2*(nNayb).*(nNayb-1)-2*d2));
-cc0(isnan(cc0))= 0;
-cc0Free = wmean(cc0,free)/mean(cc0(binCons));
-cc0Para = wmean(cc0,para)/mean(cc0(binCons));
+
+%cc0(isnan(cc0))= 0;
+cc0Free = wmean(cc0,carn)/mean(cc0(binCons),'omitnan');
+cc0Para = wmean(cc0,para)/mean(cc0(binCons),'omitnan');
 
 %Cyclic; 
-ccCyc = full(diag(A*A2))./(gen0.*vul0-d2);
-ccCyc(isnan(ccCyc)) = 0;
-ccCycFree = wmean(ccCyc,free)/mean(ccCyc(binCons));
-ccCycPara = wmean(ccCyc,para)/mean(ccCyc(binCons));
+ccCycTop = full(diag(A*A2));
+ccCycBot = (gen0.*vul0-d2);
+ccCyc = ccCycTop./ccCycBot;
+ccCyc = ccCyc/mean(ccCyc,'omitnan');
+%ccCyc(isnan(ccCyc)) = 0;
+ccCycCarn = sum(ccCycTop.*carn)/sum(ccCycBot.*carn);
+ccCycPara = sum(ccCycTop.*para)/sum(ccCycBot.*para);
+
+
 %middleman
-ccMid = full(diag((A*A')*A))./(gen0.*vul0-d2);
-ccMid(isnan(ccMid)) = 0;
-ccMidFree = wmean(ccMid,free)/mean(ccMid(binCons));
-ccMidPara = wmean(ccMid,para)/mean(ccMid(binCons));
+ccMidTop = full(diag((A*A')*A));
+ccMidBot = (gen0.*vul0-d2);
+ccMid = ccMidTop./ccMidBot;
+ccMid = ccMid/mean(ccMid,'omitnan');
+%ccMid(isnan(ccMid)) = 0;
+ccMidCarn = sum(ccMidTop.*carn)/sum(ccMidBot.*carn);
+ccMidPara = sum(ccMidTop.*para)/sum(ccMidBot.*para);
+
+
 %innie
-ccIn = full(diag(A'*A2))./(gen0.*(gen0-1));
-ccIn(isnan(ccIn)) = 0;
-ccInFree = wmean(ccIn,free)/mean(ccIn(binCons));
-ccInPara = wmean(ccIn,para)/mean(ccIn(binCons));
+ccInTop = full(diag(A'*A2));
+ccInBot = (gen0.*(gen0-1));
+ccIn = ccInTop./ccInBot;
+ccIn = ccIn/mean(ccIn,'omitnan');
+
+%ccIn(isnan(ccIn)) = 0;
+ccInCarn = sum(ccInTop.*carn)/sum(ccInBot.*carn);
+ccInPara = sum(ccInTop.*para)/sum(ccInBot.*para);
 %outie
-ccOut = full(diag(A2*A'))./(vul0.*(vul0-1));
-ccOut(isnan(ccOut)) = 0;
-ccOutFree = wmean(ccOut,free)/mean(ccOut(binCons));
-ccOutPara = wmean(ccOut,para)/mean(ccOut(binCons));
+ccOutTop = full(diag(A2*A'));
+ccOutBot = (vul0.*(vul0-1));
+ccOut = ccOutTop./ccOutBot;
+ccOut = ccOut/mean(ccOut,'omitnan');
 
-%betweenness takes a ton of time; would be better if I could do this 
-%faster.. oh well.
-
-%Betweenness
-btwns = btwn(res,con);
-btwns = (btwns-min(btwns))/max(btwns);
-btwnsFree = wmean(btwns,free)/mean(btwns(binCons));
-btwnsPara = wmean(btwns,para)/mean(btwns(binCons));
-
-%Ecological Betweenness
-ecoBtwns = ecoBtwn(res,con);
-ecoBtwns = (ecoBtwns-min(ecoBtwns))/max(ecoBtwns);
-ecoBtwnsFree = wmean(ecoBtwns,free)/mean(ecoBtwns(binCons));
-ecoBtwnsPara = wmean(ecoBtwns,para)/mean(ecoBtwns(binCons));
-
-%Ecological Pagerank
-pr = pageRank(res,con);
-prFree = wmean(pr,free)/mean(pr(binCons));
-prPara = wmean(pr,para)/mean(pr(binCons));
+%ccOut(isnan(ccOut)) = 0;
+ccOutCarn = sum(ccOutTop.*carn)/sum(ccOutBot.*carn);
+ccOutPara = sum(ccOutTop.*para)/sum(ccOutBot.*para);
 
 C = L/S^2;
 
-Lcon = sum(sum(A(binCons,binCons)));
+Lcon = sum(sum(A(binCons,binCons),'omitnan'));
 Scon = sum(binCons);
 Ccon = Lcon/Scon^2;
 
-binPara = para>=0.5;
-binFree = free>0.5;
+carn = carn + 0;
+para = para + 0;
 
-Lff = sum(sum(A.*(free*free')));
+Lff = sum(sum(A.*(carn*carn')));
 Sf = sum(binFree);
 Cff = Lff/Sf^2;
 
@@ -199,10 +229,10 @@ Lpp = sum(sum(A.*(para*para')));
 Sp = sum(binPara);
 Cpp = Lpp/Sp^2;
 
-Lfp = sum(sum(A.*(free*para')));
+Lfp = sum(sum(A.*(carn*para')));
 Cfp = Lfp/(Sp*Sf);
 
-Lpf = sum(sum(A.*(para*free')));
+Lpf = sum(sum(A.*(para*carn')));
 Cpf = Lpf/(Sp*Sf);
 
 fPar = Sp/(Sp+Sf);
@@ -214,7 +244,7 @@ herb = sum(abs(patl-2)<1e-2)/S;
 omn = sum(mod(patl,1)>1e-2)/S;
 
 para = para./nodeSize;
-free = free./nodeSize;
+carn = carn./nodeSize;
 
 localProperties = [     
                          vul...                 1
@@ -227,15 +257,17 @@ localProperties = [
                         ,meanVulPrey...         8
                         ,meanGenPred...         9
                         ,para...                10
-                        ,free...                11
+                        ,carn...                11
                         ,repmat(S,S,1)...       12
                         ,repmat(C,S,1)...       13
                         ,nodeSize...            14
-                        ,ccCyc...                 15
-                        ,ccMid...                 16
-                        ,ccIn...                 17
-                        ,ccOut...                 18
+                        ,ccCyc...               15
+                        ,ccMid...               16
+                        ,ccIn...                17
+                        ,ccOut...               18
                     ];
+                
+
 
 globalProperties = [
                    S...             1   
@@ -277,13 +309,13 @@ localMeans = [
                 ,S...                       19
                 ,C...                       20
                 ,minDistance...             21
-                ,ccCycFree...                 22
+                ,ccCycCarn...                 22
                 ,ccCycPara...                 23
-                ,ccMidFree...                 24
+                ,ccMidCarn...                 24
                 ,ccMidPara...                 25
-                ,ccInFree...                 26
+                ,ccInCarn...                 26
                 ,ccInPara...                 27
-                ,ccOutFree...                 28
+                ,ccOutCarn...                 28
                 ,ccOutPara...                 29
             ];
 end

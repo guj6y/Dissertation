@@ -279,6 +279,8 @@
 
         %I hate using unique, but..
         idList = unique([res0;con0]);
+        basalIds = setdiff(res0,con0);
+        
         bodySizes = zeros(1,max(idList));
         biomasses = zeros(1,max(idList));
 
@@ -374,7 +376,10 @@
         
         ectoOnly=false;
         if ectoOnly
-            noEcto = (~(binOldEctoInvertCell{ii}(res0)&binOldEctoInvertCell{ii}(con0)))|binOldAutoCell{ii}(res0);
+            noEcto = ~((binOldEctoInvertCell{ii}(res0)&binOldEctoInvertCell{ii}(con0))...
+                |(binOldAutoCell{ii}(res0)&binOldEctoInvertCell{ii}(con0))...
+                |(binOldDetCell{ii}(res0)&binOldEctoInvertCell{ii}(con0))...
+                );
             res0(noEcto)=[];
             con0(noEcto)=[];
         end
@@ -446,7 +451,23 @@
             
             %Is that ^ not an indication that they are a functionally distinct
             %class of species?
+            
+            %FInd disconnected species: This should only trigger once...
+            A = sparse(res,con,1,max([res;con]),max([res;con]));
+            [n,grps] = graphconncomp(sparse(A),'weak',true,'directed',true);
 
+            maxCompSize = 0;
+            compSizes = zeros(1,n);
+            for ll = 1:n
+                sizeii = sum(grps==ll);
+                compSizes(ll) = sizeii;
+                if sizeii>maxCompSize
+                    maxCompSize=sizeii;
+                    largeComp = ll;
+                end
+            end
+            winners = grps==largeComp;
+            [killTheseI, killTheseJ] = find((1-winners)'*(1-winners));
             %similarity Matrix
             simMx = calculateSimilarity(res,con);
             %Same matrix:  (sim(i,j) = 1, if i is the same as j.& =0 o.w.
@@ -471,6 +492,8 @@
             %Species that we need to delete; the triu means that doing this
             %won't delete any species equivalence classes (trophic species)
             deleteVector = (1:nSpecies)';
+            I = [I;killTheseI];
+            J = [J;killTheseJ];
             deleteVector(I) = 0;
 
             %Delete links that include a superfluous species; first, change
@@ -663,7 +686,12 @@
 
 cd('data/Processed')
 close all
-save('webGeneration.mat')
+if ectoOnly
+    save('webGenerationEctoInverts.mat')
+else
+    save('webGeneration.mat')
+end
+
 cd(codeDir)
 
 
