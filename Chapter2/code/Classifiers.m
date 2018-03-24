@@ -32,12 +32,14 @@
 clear
 
 load('data/Processed/webGeneration.mat')
-T = load('AgglomerationPropsMajority.mat','propsLocal','localCol','propsGlobal','globalCol');
+T = load('AgglomerationPropsMajority.mat');
 
 propsLocal = T.propsLocal;
 localCol = T.localCol;
 propsGlobal = T.propsGlobal;
 globalCol = T.globalCol;
+localMeans = T.propsLocalMeans;
+localMeansCol = T.localMeansCol;
 clear T
 %In case you were wondering.
 %{
@@ -81,6 +83,21 @@ variableNames = {'vul'        ...1      2
                 ...,'ccOut2'      ...12    23
                 ,'para'       ...13
                 };
+set(groot, 'defaultAxesTickLabelInterpreter','LaTeX'); 
+set(groot, 'defaultLegendInterpreter','LaTeX');
+fancyNames = {'$v$'...
+             ,'$g$'...
+             ,'$TL$'...
+             ,'$FR$'...
+             ,'$C_B$'...
+             ,'$C_{EB}$'...
+             ,'$v_r$'...
+             ,'$g_c$'...
+             ,'$\gamma^{cyc}$'...
+             ,'$\gamma^{snk}$'...
+             ,'$\gamma^{mid}$'...
+             ,'$\gamma^{src}$'...
+             };
 nPred = numel(variableNames);
 
 
@@ -90,6 +107,8 @@ nPred = numel(variableNames);
 %propsLocal(:,[10, 15,16,17,18]) = propsThatCanBeNan;
 %propsLocal = [propsLocal obsThatAreNan];
 
+figureFont = 'CMU Serif';
+
 sMin = min(propsLocal(:,localCol('S')));
 sMax = max(propsLocal(:,localCol('S')));
 
@@ -97,18 +116,20 @@ carnAndPara = (propsLocal(:,localCol('free'))>0.5)|(propsLocal(:,localCol('para'
 webs = 1:6;
 selectThisLevelGlobal = arrayfun(@(x) find(propsGlobal(:,globalCol('web'))==x,1),webs);
 Ss = propsGlobal(selectThisLevelGlobal,globalCol('S'));
-clear propsGlobal globalCol
 selectThisLevelLocal = arrayfun(@(x,y) (propsLocal(:,localCol('S'))==y)&(propsLocal(:,localCol('web'))==x),webs',Ss,'UniformOutput',false);
-
+%
+%
 initialWebs = sum(cell2mat(selectThisLevelLocal'),2)>0;
 initialWebsPropsLocal = propsLocal(initialWebs,:);
 initCarn = (initialWebsPropsLocal(:,localCol('free'))>0.5);
 initPara = (initialWebsPropsLocal(:,localCol('para'))>=0.5);
 initCarnOrPara = initCarn|initPara;
-
-X0 = propsLocal(carnAndPara,[2:4 6:10, 16:19]);
+%{
+%}
+X0 = propsLocal(:,[2:4 6:10, 16:19]);
 X0(isnan(X0)) = 0;
-
+Y0 = propsLocal(:,localCol('para'))>=0.5; %categorical
+%
 XForBig = initialWebsPropsLocal(initCarnOrPara,[2:4 6:10, 16:19]);
 XForBig(isnan(XForBig)) = 0;
 YForBig = initialWebsPropsLocal(initCarnOrPara,localCol('para'))>=0.5;
@@ -116,12 +137,13 @@ fParaBig = mean(YForBig);
 
 nBig = numel(YForBig);
 ogNodeList = 1:nBig;
-nBigTest = 1000;
+nBigTest = 100;
 classificationPlot = figure;
 
 impVars = [3 5 8 10 12];
 XImp = XForBig(:,impVars);
 varNames = variableNames(impVars);
+fancyVarnames = fancyNames(impVars);
 impVars = [impVars 0];
 nImpVars = numel(impVars);
 
@@ -256,171 +278,253 @@ end
 classFigure = figure;
 a1 = subplot(2,2,1);
 plotABar(relErrorMeans(:,2),relErrorStds(:,2),fullRelErrorMean);
-title('Relative Error, Removed Variable')
+title('(a) Relative Error, Removed Variable')
 xlabel('Variable Removed')
 ylabel('Error Relative to Random Model')
 
 
 a2 = subplot(2,2,2);
 plotABar(relErrorMeans(:,1),relErrorStds(:,1),fullRelErrorMean);
-title('Relative Error, Isolated Variable')
+title('(b) Relative Error, Isolated Variable')
 xlabel('Variable Isolated')
 ylabel('Error Relative to Random Model')
 
 
 a3 = subplot(2,2,3);
 plotABar(truePositiveMeans(:,2),truePositiveStds(:,2),fullTruePositiveMean);
-title('True Positive, Removed Variable')
+title('(c) True Positive, Removed Variable')
 xlabel('Variable Removed')
 ylabel('Fraction of Parasites Misclassifid')
 
 a4 = subplot(2,2,4);
 plotABar(truePositiveMeans(:,1),truePositiveStds(:,1),fullTruePositiveMean);
-title('True Positive, Isolated Variable')
+title('(d) True Positive, Isolated Variable')
 xlabel('Variable Isolated')
 ylabel('Fraction of Parasites Misclassified')
 
 arrayfun(@(x) set(x,'FontName','CMU Serif'),classFigure.Children);
 %arrayfun(@(x) set(x,'Interpreter','LaTeX'),[a1.Children;a2.Children;a3.Children;a4.Children]);
-arrayfun(@(x) set(x,'XTickLabels',varNames),classFigure.Children);
+arrayfun(@(x) set(x,'XTickLabels',fancyNames),classFigure.Children);
 arrayfun(@(x) set(x,'XTickLabelRotation',20),classFigure.Children);
 set(gcf, 'Units', 'Inches', 'Position', [0, 0, 8, 10]);
 arrayfun(@(x) set(x,'XTick',1:5),classFigure.Children)
 print('../figures/treeAnalysisc.png','-dpng','-r0')
-%This is insanity. Hard enough to make one model; don't try to make an
+%}
+%This is insanity. Hard enough to make one model; why try to make an
 %arbitrary number of them. They were all worthless; the big one is 
 %worseless on the agglomerated webs, too; so why did I even bother with
 %that?
-%{
-
-%Y01 = propsLocal(:,11);   %Continuous; for regression.
-Y0 = propsLocal(:,localCol('para'))>=0.5; %categorical
-sLevels = 30:109;
-nLevels = numel(sLevels);
+%
 
 
+%Need to make an array of distances for EACH species; didn't include that
+%and at this point adding it in will be a major pain in the ass.
+allNodeLevels = propsGlobal(:,globalCol('S'));
+allDistances = localMeans(:,localMeansCol('minDistance'));
+allWebs = localMeans(:,localMeansCol('web'));
+xAllLevels = unique(allNodeLevels);
+endings = [find(diff(allNodeLevels)>0); numel(allNodeLevels)-1];
+beginnings = [1; endings(1:end-1)+1];
+endings = endings -5;
+nEdges = 81;
+nBins = nEdges-1;
+dMin = 0;
+dMax = 0.8;
+distancesToPlot = linspace(dMin,dMax,nEdges);
 
-glms = cell(nLevels,1);
-trees = cell(nLevels,1);
+plotByMinDistance = nan(nEdges*nWebs,12);
+websByMinDistance = reshape(repmat(1:nWebs,nEdges,1),[],1);
+distanceGroups = repmat((1:nEdges)',nWebs,1);
+allMinDistances = zeros(nEdges,nWebs);
 
-glmErrors = nan(nLevels,1);
-treeErrors = nan(nLevels,1);
-naddas  = nan(nLevels,1);
+selectors = nan(nEdges*nWebs,4);
 
-treeParasites = nan(nLevels,1);
-glmParasites = nan(nLevels,1); 
-treeTotals = nan(nLevels,1);
-glmTotals = nan(nLevels,1);
 
-bigGlmParasites = nan(nLevels,1);
-bigTreeParasites = nan(nLevels,1);
-bigGlmTotals = nan(nLevels,1);
-bigTreeTotals = nan(nLevels,1);
-bigGlmErrors = nan(nLevels,1);
-bigTreeErrors = nan(nLevels,1);
+allSs = zeros(nEdges,nWebs);
 
-for ii = 1:nLevels
+for ii = 1:nWebs
+    distances_ii = allDistances(beginnings(ii):endings(ii));
+    nodeLevels_ii = allNodeLevels(beginnings(ii):endings(ii));
+    findMinDistances = sum(distances_ii<=distancesToPlot);
+    minDistances_ii = distances_ii(findMinDistances);
+    minNodeLevels_ii = nodeLevels_ii(findMinDistances);
     
-    s= sLevels(ii)
+    %Find S that corresponds to each minimu distance.
     
-    pickThese = (propsLocal(carnAndPara,localCol('S'))==s);
-    
-    X = X0(pickThese,:);
-    %Y1 = Y01(pickThese,:); %continuous for regression?
-    Y = Y0(pickThese,:);
-    
-    n = sum(pickThese);
-    nTrain = round(0.5*n);
-    nTest = n-nTrain;
-    
-    glmError = 0;
-    treeError = 0;
-    glmParasite = 0;
-    treeParasite = 0;
-    glmTotal = 0;
-    treeTotal = 0;
-    
-    bigGlmError = 0;
-    bigTreeError = 0;
-    bigGlmParasite = 0;
-    bigTreeParasite = 0;
-    bigGlmTotal = 0;
-    bigTreeTotal = 0;
-    
-    nadda = 0;
-    nReps = 10;
-    for z = 1:nReps
-    trainThese = false(n,1);
-    trainTheseIndices = randsample(n,nTrain);
-    trainThese(trainTheseIndices) = true;
-    testThese = ~trainThese;
-    
-    XTrain = X(trainThese,:);
-    YTrain = Y(trainThese,:);
-    
-    XTest = X(testThese,:);
-    YTest = Y(testThese,:);
-
-    glm = fitglm(XTrain,YTrain...
-        ,'distribution','binomial'...
-        ,'varNames',variableNames);
-    YTrainHats = glm.predict(XTrain)>=cutOffVals;
-    fracPara = mean(YTrain);
-    cutOff = cutOffVals(find(sum(YTrainHats)<=fracPara*numel(YTrain),1));
-    
-    YTestHat = (glm.predict(XTest)>=cutOff);
-    glmError = (1 - sum(YTestHat == YTest)/nTest)/nReps + glmError;
-    glmTotal = (sum(YTestHat)/nTest)/nReps + glmTotal;
-    glmParasite = sum(YTest&YTestHat)/sum(YTest)/nReps + glmParasite;
-    
-    tree = fitctree(XTrain,YTrain...
-        ,'PredictorNames',variableNames(1:nPred-1)...
-        ,'MaxNumSplits',4 ...
-        );
-    YTestHat = tree.predict(XTest);
-    treeError = (1 -sum(YTestHat == YTest)/nTest)/nReps + treeError;
-    treeTotal = (sum(YTestHat)/nTest)/nReps + treeTotal;
-    treeParasite = sum(YTest&YTestHat)/sum(YTest)/nReps + treeParasite;
-    
-    nadda = mean(YTest)/10 + nadda;
-    
-    YTestHat = treeBig.predict(XTest);
-    bigTreeError = (1 -sum(YTestHat == YTest)/nTest)/nReps + bigTreeError;
-    bigTreeTotal = (sum(YTestHat)/nTest)/nReps + bigTreeTotal;
-    bigTreeParasite = sum(YTest&YTestHat)/sum(YTest)/nReps + bigTreeParasite;
-    
-    YTestHat = (glmBig.predict(XTest)<=cutOffBig);
-    bigGlmError = (1 - sum(YTestHat == YTest)/nTest)/nReps + bigGlmError;
-    bigGlmTotal = (sum(YTestHat)/nTest)/nReps + bigGlmTotal;
-    bigGlmParasite = sum(YTest&YTestHat)/sum(YTest)/nReps + bigGlmParasite;
-    
-    end
-    
-    %lms{ii} = lm;
-    glms{ii} = glm;
-    trees{ii} = tree;
-    
-    glmParasites(ii) = glmParasite;
-    treeParasites(ii) = treeParasite;
-    glmTotals(ii) = glmTotal;
-    treeTotals(ii) = treeTotal;
-    glmErrors(ii) = glmError;
-    treeErrors(ii) = treeError;
-    
-    bigGlmParasites(ii) = bigGlmParasite;
-    bigTreeParasites(ii) = bigTreeParasite;
-    bigGlmTotals(ii) = bigGlmTotal;
-    bigTreeTotals(ii) = bigTreeTotal;
-    bigGlmErrors(ii) = bigGlmError;
-    bigTreeErrors(ii) = bigTreeError;
-    
-    naddas(ii) = nadda;
+    selectors((1:nEdges)+(ii-1)*nEdges,:) = ...
+       [(1:nEdges)'  minNodeLevels_ii repmat(ii,nEdges,1) minDistances_ii];
     
 end
+
+meanWebSizes = grpstats(selectors(:,2),selectors(:,1));
+
+nAllSpecies = length(propsLocal);
+nAllWebs = length(propsGlobal);
+allDistances = nan(nAllSpecies,1);
+theseDistanceGroups = zeros(nAllSpecies,1);
+
+
+
+%This is actually pretty quick.
+for ii = 1:nAllWebs
+    
+    %fprintf('%.1f%%\n',ii/nAllWebs*100);
+    thisWeb = propsGlobal(ii,globalCol('web'));
+    thisWebsS = propsGlobal(ii,globalCol('S'));
+    thisWebsD = propsGlobal(ii,globalCol('d_J'));
+    
+    theseSpeciesForThisWeb = (propsLocal(:,localCol('web'))==thisWeb) & ...
+        (propsLocal(:,localCol('S'))==thisWebsS);
+    
+    allDistances(theseSpeciesForThisWeb) = thisWebsD;
+end
+
+trees = cell(nEdges,1);
+
+
+naddas  = nan(nEdges,1);
+
+
+treeTruePositiveMean = nan(nEdges,1);
+treeRelErrorsMean = nan(nEdges,1);
+treeErrorsMean = nan(nEdges,1);
+
+treeTruePositiveStd = nan(nEdges,1);
+treeRelErrorsStd = nan(nEdges,1);
+treeErrorsStd = nan(nEdges,1);
+
+SbySpecies = propsLocal(:,localCol('S'));
+webBySpecies = propsLocal(:,localCol('web'));
+
+%predFrequency = zeros(nEdges,nPred-1);
+shortLocalCol = containers.Map(variableNames,1:13);
+nReps = 100;
+load('predFrequency.mat')
+predsUsedBin = false(nEdges,nPred-1);
+for ii = 1:nEdges
+    %Need to pick out the webs I'm using; useTheseWebs gives S, webNo for
+    %all six webs.
+    predFreqThisSize = predFrequency(ii,:);
+    [predsSorted,useThesePreds] = sort(predFreqThisSize,'descend');
+    useThesePreds = useThesePreds(1:4);
+    %useThesePreds = 1:12;
+    predsUsedBin(ii,useThesePreds) = true;
+    sAndWeb = selectors(selectors(:,1) == ii,[2 3]);
+    usesTheseSpecies = false(nAllSpecies,1);
+    useTheseSpecies = carnAndPara&...
+        sum((SbySpecies == sAndWeb(:,1)')&(webBySpecies==sAndWeb(:,2)'),2);
+    varNames = variableNames(useThesePreds);
+    X = X0(useTheseSpecies,useThesePreds);
+    Y = Y0(useTheseSpecies);
+    
+    nTotal = length(Y);
+    nTrain = round(0.5*nTotal);
+    nTest = nTotal-nTrain;
+    treeErrorsTemp = zeros(nReps,1);
+    treeRelErrorsTemp = zeros(nReps,1);
+    treeTruePositiveTemp = zeros(nReps,1);
+    for kk = 1:nReps
+        testThese = false(nTotal,1);
+        testIndices = randsample(nTotal,nTest);
+        testThese(testIndices) = true;
+        xTest = X(testThese,:);
+        yTest = Y(testThese,:);
+        xTrain = X(~testThese,:);
+        yTrain = Y(~testThese,:);
+
+        tree = fitctree(xTrain,yTrain...
+                    ,'PredictorNames',varNames...
+                    ,'MaxNumSplits',4 ...
+                        );
+                    fracParaTrain = mean(yTrain);
+        knownFractionErrors = 2*fracParaTrain*(1-fracParaTrain);
+        treeErrorsTemp(kk) = (1 - sum(tree.predict(xTest)==yTest)/numel(yTest));
+        treeRelErrorsTemp(kk) = (1 - sum(tree.predict(xTest)==yTest)/numel(yTest))/knownFractionErrors;
+        treeTruePositiveTemp(kk) = 1-sum(tree.predict(xTest)&yTest)/sum(yTest);           
+    %{	
+    predsUsed = tree.CutPredictor;
+    predsUsed(cellfun(@isempty,predsUsed)) = [];
+    predUsedIdx = cellfun(@(x) shortLocalCol(x),predsUsed);
+    predFrequency(ii,predUsedIdx) = predFrequency(ii,predUsedIdx) + 1;
+    %}
+    end
+    treeTruePositiveMean(ii) = mean(treeTruePositiveTemp);
+    treeRelErrorsMean(ii) = mean(treeRelErrorsTemp);
+    treeErrorsMean(ii) = mean(treeErrorsTemp);
+
+    treeTruePositiveStd(ii) = mean(treeTruePositiveTemp);
+    treeRelErrorsStd(ii) = mean(treeRelErrorsTemp);
+    treeErrorsStd(ii) = mean(treeErrorsTemp);
+
+end
+treeSeqFig = figure('Units', 'Inches', 'Position', [0, 0, 8, 10]);
+ax1 = subplot(2,1,1);
+h1Left = plot(distancesToPlot,treeRelErrorsMean);
+yyaxis right
+h1Right = plot(distancesToPlot,treeTruePositiveMean);
+xlim([-0.01 0.81]);
+ax1.YAxis(2).Color = [0 0 0];
+legend('Relative Error','Parasite Misclassification Rate'...
+            ,'Location','NorthWest')
+title('(a) Classifier Performance')
+yyaxis left
+ylabel('Error Relative to random model')
+yyaxis right
+ylabel('Parasite Misclassification Rate')
+        
+        
+ax2 = subplot(2,1,2);
+yyaxis left
+hold on
+spy(predsUsedBin','k.');
+h2Grid = plot([0;82],repmat(1:12,2,1)','-','Color',[0.8 0.8 0.8]);
+hold off
+title('(b) Predictors Used')
+yyaxis right
+plot(distancesToPlot*100+1,meanWebSizes);
+%
+set(ax2.YAxis(1)...
+                   ,'TickValues',1:12 ...
+                   ,'TickLabels',fancyNames(1:12)...
+                   ,'Color',[0 0 0]...
+                   );
+set(ax2.YAxis(2)...
+    ,'Limits',[floor(min(meanWebSizes)),ceil(max(meanWebSizes))]...
+    ,'Color',[0 0 0]...
+    );
+ylabel('Mean Web Size')
+yyaxis left
+hold on
+spy(predsUsedBin','k.');
+hold off
+
+ax2.PlotBoxAspectRatioMode = 'auto';
+ax2.XAxis.TickValues = ax1.XAxis.TickValues*100+1;
+ax2.XAxis.TickLabels = ax1.XAxis.TickLabels;
+
 %}
+xlabel('Minimum Clustering Distance')
+arrayfun(@(x) set(x,'FontName',figureFont),treeSeqFig.Children)
+
+%[left bottom width height]
+ax1Pos = ax1.Position;
+ax1Top = ax1Pos(2) + ax1Pos(4);
+ax2Pos = ax2.Position;
+ax2Shrink = 0.2*ax2Pos(4);
+ax2Pos(4) = 0.8*ax2Pos(4);
+ax1Pos(2) = ax2Pos(2) + ax2Pos(4) + 0.05;
+ax1Pos(4) = ax1Top - ax1Pos(2) + 0.03;
+ax2.Position = ax2Pos;
+ax1.Position = ax1Pos;
+print('../figures/ParasiteAcc.png','-dpng','-r0')
+%
+%save('predFrequency.mat','predFrequency');
+
+%}
+%
 %{
 close all
-figureFont = 'CMU Serif';
+
 classFig = figure;
 subplot(2,1,1);
 naddas(naddas>0.5) = 1-naddas(naddas>0.5);

@@ -132,38 +132,36 @@ hAll = cell(nLocalPropsPlotted,1);
 hEveryWeb = cell(nLocalPropsPlotted,nWebs);
 hDistances = cell(nLocalPropsPlotted,nWebs);
 
-endings = [find(diff(allNodeLevels)>0);numel(allNodeLevels)-1];
+endings = [find(diff(allNodeLevels)>0); numel(allNodeLevels)-1];
 beginnings = [1; endings(1:end-1)+1];
 endings = endings -5;
-nEdges = 21;
+nEdges = 81;
 nBins = nEdges-1;
 dMin = 0;
 dMax = 0.8;
-distancesToPlotEdges = linspace(dMin,dMax,nEdges);
-binnedValues = nan(nBins*nWebs,numel(localPropsPlotted));
-deltaDistance = mean(diff(distancesToPlotEdges));
-distancesToPlot = linspace(dMin+deltaDistance/2,dMax-deltaDistance/2,nBins);
-grpsForDistancePlot = repmat((1:nBins)',nWebs,1);
+distancesToPlot = linspace(dMin,dMax,nEdges);
+
+plotByMinDistance = nan(nEdges*nWebs,numel(localPropsPlotted));
+websByMinDistance = reshape(repmat(1:nWebs,nEdges,1),[],1);
+distanceGroups = repmat((1:nEdges)',nWebs,1);
+
 for ii = 1:nWebs
     distances_ii = allDistances(beginnings(ii):endings(ii));
     
     valuesFree_ii = localMeans(beginnings(ii):endings(ii),freeIndices);
     valuesPara_ii = localMeans(beginnings(ii):endings(ii),paraIndices); 
     diffs_ii = valuesFree_ii - valuesPara_ii;
-    discretizedDistances_ii = discretize(distances_ii,distancesToPlotEdges);
-    distanceDiscretizedMeans_ii = grpstats(diffs_ii,discretizedDistances_ii);
-    discretizedDistances_ii(isnan(discretizedDistances_ii)) = [];
-    discretizedDistances_ii = unique(discretizedDistances_ii);
-    binnedValues(discretizedDistances_ii+(nBins*(ii-1)),:) = distanceDiscretizedMeans_ii;
     
-end
-nanBinnedValues = isnan(binnedValues(:,1));
-[meansToPlotBinnedDistances,stdsToPlotBinnedDistances,nsToPlotBinnedDistances]...
-    = grpstats(binnedValues,grpsForDistancePlot...
-        ,{@(x) mean(x,'omitnan'),@(x) std(x,'omitnan'),@numel});
-TsBinnedDistances = meansToPlotBinnedDistances./(stdsToPlotBinnedDistances./sqrt(nsToPlotBinnedDistances));
-PsBinnedDistances = tcdf(abs(TsBinnedDistances),nsToPlotBinnedDistances-1,'upper');
+    lastDistanceGreaterThan = sum(distances_ii<=distancesToPlot)';
+    diffsToPlot_ii = diffs_ii(lastDistanceGreaterThan,:);
+    
+    plotByMinDistance(((1:nEdges)+nEdges*(ii-1)),:) = diffsToPlot_ii;
 
+end
+[groupedDistanceMeans,groupedDistanceStd,groupedDistanceN] = ...
+    grpstats(plotByMinDistance, distanceGroups,{@(x) mean(x,'omitnan'),@(x) std(x,'omitnan'),@(x) sum(isfinite(x))});
+groupedDistanceTs = groupedDistanceMeans./(groupedDistanceStd./sqrt(groupedDistanceN));
+groupedDistancePs = tcdf(abs(groupedDistanceTs),groupedDistanceN-1,'upper');
 %This code plots distance versus fraction of S remaining. shows very high
 %correlation between the two.
     %{
@@ -219,15 +217,13 @@ for jj = 1:nLocalPropsPlotted
     subplot(3,4,jj);
     hold on
         for ii = 1:nWebs
-            thisWeb = (1:nBins)+(ii-1)*nBins;
-            binnedValuesThisWeb = binnedValues(thisWeb,jj);
-            nanBinnedValuesThisWeb = nanBinnedValues(thisWeb);
-            grpsForDistancePlotThisWeb = nanBinnedValues(thisWeb);
-            hDistances{jj,ii} = plot(distancesToPlot(~nanBinnedValuesThisWeb),binnedValuesThisWeb(~nanBinnedValuesThisWeb)...
+            thisWeb = (1:nEdges)+(ii-1)*nEdges;
+            plotByMinDistanceThisWeb = plotByMinDistance(thisWeb,jj);
+            hDistances{jj,ii} = plot(distancesToPlot,plotByMinDistanceThisWeb...
                 ,'LineWidth',.5...
                 ,'Color',[.7,.7,.7]);
         end
-    hDistanceMean = plot(distancesToPlot,meansToPlotBinnedDistances(:,jj)...
+    hDistanceMean = plot(distancesToPlot,groupedDistanceMeans(:,jj)...
             ,'LineWidth',3 ...
             ,'Color',[0 0 1]);
     hold off
@@ -261,7 +257,7 @@ for jj = 1:nLocalPropsPlotted
     stdDiff = std(diffs)/sqrt(numel(diffs));
     tDiff = meanDiff./stdDiff;
     tDiffs(jj) = tDiff;
-    pDiff = tcdf(abs(tDiff),numel(tDiffs)-1,'upper');
+    pDiff = tcdf(abs(tDiff),numel(diffs)-1,'upper');
     pDiffs(jj) = pDiff;
     lb = min(xl(1),yl(1));
     ub = max(xl(2),yl(2));
@@ -302,11 +298,11 @@ for ii = 1:nLevels
     
 end
 
-rejectedAllBins = zeros(nBins,nLocalPropsPlotted);
-colsAllBins = cell(nBins,nLocalPropsPlotted);
+rejectedAllBins = zeros(nEdges,nLocalPropsPlotted);
+colsAllBins = cell(nEdges,nLocalPropsPlotted);
 
-for ii = 1:nBins
-    PsThisBin = PsBinnedDistances(ii,:);
+for ii = 1:nEdges
+    PsThisBin = groupedDistancePs(ii,:);
     [pSorted,Idx] = sort(PsThisBin);
     thisBinRejected = false(nLocalPropsPlotted,1);
     thisBinRejected(Idx) = pSorted<alphaSeq;
@@ -368,11 +364,11 @@ for jj = 1:nLocalPropsPlotted
         figure(localFigDistance)
         subplot(3,4,jj);
         hold on
-        h = plot([distancesToPlot;distancesToPlot],[zeros(size(distancesToPlot)); meansToPlotBinnedDistances(:,jj)']);
-        set(h, {'color'}, colsAllBins(:,jj));
-        set(h,'linewidth',3)
+        hDist = plot([distancesToPlot;distancesToPlot],[zeros(size(distancesToPlot)); groupedDistanceMeans(:,jj)']);
+        set(hDist, {'color'}, colsAllBins(:,jj));
+        set(hDist,'linewidth',3)
         uistack(hDistanceMean,'top')
-        uistack(h,'bottom')
+        uistack(hDist,'bottom')
         rl = refline(0,0);
         rl.Color = [.5,.5,.5];
         rl.LineStyle = '--';
@@ -430,6 +426,7 @@ title(a,'C')
 colormap(summer);
 arrayfun(@(x) set(x,'FontName',figureFont),localFigFirst.Children);
 arrayfun(@(x) set(x,'FontName',figureFont),localFigAll.Children);
+arrayfun(@(x) set(x,'FontName',figureFont),localFigDistance.Children);
 set(localFigFirst, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
 set(localFigAll, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
 set(localFigDistance, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
