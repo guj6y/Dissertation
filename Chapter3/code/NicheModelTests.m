@@ -4,7 +4,7 @@
 %Correspond to .41, the most agglomeration before we start to really lose
 %accuracy in the classification tree.
 distancesPlotted = [0 0.05 0.1 0.2 0.4];
-
+addpath(genpath('~/matlab_bgl'));
 nCores = feature('numcores');
 parpool('local',nCores);
 
@@ -186,7 +186,7 @@ webProps = cell(nModels,nWebs);
                globalProps{ii,jj} = tempGlobal;
            end
         end
-        save(sprintf('NicheTestResults%uDistance%sLinkageDistance%u',linkgeType,count)...
+        save(sprintf('NicheTestResults%uDistance%sLinkageDistance%u',linkageType,count)...
             ,'carnParaDiffs','globalProps','treeProps');
    end
 end
