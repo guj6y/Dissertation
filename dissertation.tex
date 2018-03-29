@@ -1,9 +1,46 @@
-\documentclass{report}
+\documentclass[11pt,letterpaper,twoside,openright,draft]{report}
 
 \usepackage{subfiles}
 
-\input{header.tex}
+\usepackage{tikz,
+pgfplots,
+graphicx,
+caption,
+multirow,
+appendix,
+pgfplotstable,
+cite,
+booktabs,
+xcolor,
+soul,
+geometry,
+amsmath,
+setspace,
+lineno,
+tabularx,
+rotating,
+}
 
+\linenumbers 
+\usepackage[labelformat=simple]{subcaption}
+\renewcommand\thesubfigure{(\alph{subfigure})}
+\usepackage[hidelinks]{hyperref}
+
+\usepackage[author=,draft]{fixme}
+\fxuselayouts{margin}
+\fxusetheme{color}
+\definecolor{targetbkg}{RGB}{158,241,253}
+\sethlcolor{targetbkg}
+\makeatletter
+\newcommand\FXTargetLayoutHigh[2]{\@fxuseface{target}\hl{#2}}
+\makeatother
+\FXRegisterTargetLayout{high}{\FXTargetLayoutHigh}
+\fxusetargetlayout{high}
+
+%\input{header.tex}
+
+\newcommand\DissertationDir{/home/nkappler/Research/Dissertation/}
+\doublespacing
 \begin{document}
 %Preamble; toc; titlepage, etc.
 
