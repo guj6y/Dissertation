@@ -125,7 +125,7 @@ for linkages = {'Min','Max'}
         %The plan is to calculate 100 webs with each proposed model for each web.
         %We then compare the average performance across all 6 webs.
 
-        nWebsPerWeb = 2;
+        nWebsPerWeb = 1;
 
         webFunctions = {@nicheModelRandCon;
                         ...@nicheModelRandCarn;
@@ -192,4 +192,3 @@ webProps = cell(nModels,nWebs);
 end
 clear carnParaDiffs globalProps treeProps
 save('nicheModelTestsVariables.mat')
-    
