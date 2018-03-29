@@ -1,14 +1,18 @@
 clear
-
+linkageType = 'Min';
+%linkageType = 'Max';
 load('data/Processed/webGeneration.mat')
-T = load('AgglomerationPropsMajority.mat');
+T = load(sprintf('AgglomerationProps%sLinkage.mat',linkageType));
 
+figureFont =  'CMU Serif';
 propsLocal = T.propsLocal;
 propsGlobal = T.propsGlobal;
 localMeans = T.propsLocalMeans;
 localCol = T.localCol;
 globalCol = T.globalCol;
 localMeanCol = T.localMeansCol;
+fullProps = T.fullProps;
+reducedProps = T.reducedProps;
 clear T
 
 [nSpecies,nLocalVars] = size(propsLocal);
@@ -42,7 +46,6 @@ localPropsPlotted = {
                         'vul'        ...
                         ,'gen'        ...
                         ,'patl'       ...
-                        ...,'cc0'         ...
                         ,'pr'         ...
                         ,'btwns'       ...
                         ,'ecoBtwns'    ...
@@ -53,6 +56,10 @@ localPropsPlotted = {
                         ,'ccIn'          ...
                         ,'ccOut'          ...
                         };
+
+nLocalPropsPlotted = numel(localPropsPlotted);
+globalPropsPlotted = {'C','Cf','Cff','Cfp','Cpf','Cpp','herb','int','omn','top','fPar','fCarn'};
+    
 localPropsPlottedFree = cellfun(@(x) strcat(x,'Free'),localPropsPlotted,'UniformOutput',false);
 localPropsPlottedPara = cellfun(@(x) strcat(x,'Para'),localPropsPlotted,'UniformOutput',false);
 
@@ -75,251 +82,100 @@ fancyLocalNames = {'(a) Vulnerability'...
                   ,'(k) Frac. Resource Links'...            in
                   ,'(l) Frac. Consumer Links'};            %out
 
-localFigFirst = figure;
-localFigAll = figure;
-localFigDistance = figure;
-distanceSPlots = figure;
-localFigRelNodeLevel = figure;
-figureFont =  'CMU Serif';
+selectThisLevelGlobal = arrayfun(@(x) find(propsGlobal(:,globalCol('web'))==x,1),webs);
+Ss = propsGlobal(selectThisLevelGlobal,globalCol('S'));
+Cs = propsGlobal(selectThisLevelGlobal,globalCol('C'));
+              
+alpha = 0.05;
+m = nLocalPropsPlotted;
+alphaSeq = alpha./(m+1-(1:m));
 
-webCount = 0;
-plottingInitial = true;
-initialSizes = propsGlobal(arrayfun(@(x) find(propsGlobal(:,globalCol('web'))==x,1),webs),globalCol('S'));
-if plottingInitial
-    selectThisLevelGlobal = arrayfun(@(x) find(propsGlobal(:,globalCol('web'))==x,1),webs);
+textColRejected = [0.8 0.2 0.2];
+textColFailed = [0.5 0.5 0.5];
+lineColRejected = [1 0.5 0.5];
+lineColFailed = [0.8 0.8 0.8];
+
+plotsToPlot = [false false false false true];
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Draw plots of the initial webs.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if plotsToPlot(1)
+    
+    localFigFirst = figure;
+    
+    
     Ss = propsGlobal(selectThisLevelGlobal,globalCol('S'));
     selectThisLevelLocal = arrayfun(@(x,y) (propsLocal(:,localCol('S'))==y)&(propsLocal(:,localCol('web'))==x),webs',Ss,'UniformOutput',false);
     initialWebs = sum(cell2mat(selectThisLevelLocal'),2)>0;
     initialWebsPropsLocal = propsLocal(initialWebs,:);
-else
-    plotAtThisLevel = 50;
-    selectThisLevelLocal = propsLocal(:,localCol('S')) == plotAtThisLevel;
-    selectThisLevelGlobal = propsGlobal(:,globalCol('S')) == plotAtThisLevel;
-end
-initCarn = (initialWebsPropsLocal(:,localCol('free'))>0.5);
-initPara = (initialWebsPropsLocal(:,localCol('para'))>=0.5);
-initCarnOrPara = initCarn|initPara;
 
-Ss = propsGlobal(selectThisLevelGlobal,globalCol('S'));
-Cs = propsGlobal(selectThisLevelGlobal,globalCol('C'));
-cMapMin = round(min(propsGlobal(selectThisLevelGlobal,globalCol('C')))*.99-.001,3);
-cMapMax = round(max(propsGlobal(selectThisLevelGlobal,globalCol('C')))*1.01+.001,3);
-colMatrix = summer(100);
-cVals = linspace(cMapMin,cMapMax,100);
+    initCarn = (initialWebsPropsLocal(:,localCol('free'))>0.5);
+    initPara = (initialWebsPropsLocal(:,localCol('para'))>=0.5);
+    initCarnOrPara = initCarn|initPara;
 
-allNodeLevels = propsGlobal(:,globalCol('S'));
-allDistances = localMeans(:,localMeanCol('minDistance'));
+    cMapMin = round(min(propsGlobal(selectThisLevelGlobal,globalCol('C')))*.99-.001,3);
+    cMapMax = round(max(propsGlobal(selectThisLevelGlobal,globalCol('C')))*1.01+.001,3);
+    colMatrix = summer(100);
+    cVals = linspace(cMapMin,cMapMax,100);
 
-
-
-xAllLevels = unique(allNodeLevels);
-nLocalPropsPlotted = numel(localPropsPlotted);
-nLevels = numel(xAllLevels);
-
-meanFAll = zeros(nLocalPropsPlotted,nLevels);
-meanPAll = zeros(nLocalPropsPlotted,nLevels);
-
-tDiffs = zeros(nLocalPropsPlotted,1);
-pDiffs = zeros(nLocalPropsPlotted,1);
-xMeans = zeros(nLocalPropsPlotted,1);
-yMeans = zeros(nLocalPropsPlotted,1);
-
-allTs = zeros(nLevels,nLocalPropsPlotted);
-allPs = zeros(nLevels,nLocalPropsPlotted);
-
-h = cell(nLocalPropsPlotted,1);
-hAll = cell(nLocalPropsPlotted,1);
-hEveryWeb = cell(nLocalPropsPlotted,nWebs);
-hDistances = cell(nLocalPropsPlotted,nWebs);
-
-endings = [find(diff(allNodeLevels)>0); numel(allNodeLevels)-1];
-beginnings = [1; endings(1:end-1)+1];
-endings = endings -5;
-nEdges = 81;
-nBins = nEdges-1;
-dMin = 0;
-dMax = 0.8;
-distancesToPlot = linspace(dMin,dMax,nEdges);
-
-plotByMinDistance = nan(nEdges*nWebs,numel(localPropsPlotted));
-websByMinDistance = reshape(repmat(1:nWebs,nEdges,1),[],1);
-distanceGroups = repmat((1:nEdges)',nWebs,1);
-
-for ii = 1:nWebs
-    distances_ii = allDistances(beginnings(ii):endings(ii));
     
-    valuesFree_ii = localMeans(beginnings(ii):endings(ii),freeIndices);
-    valuesPara_ii = localMeans(beginnings(ii):endings(ii),paraIndices); 
-    diffs_ii = valuesFree_ii - valuesPara_ii;
+    tDiffs = zeros(nLocalPropsPlotted,1);
+    pDiffs = zeros(nLocalPropsPlotted,1);
+    xMeans = zeros(nLocalPropsPlotted,1);
+    yMeans = zeros(nLocalPropsPlotted,1);
     
-    lastDistanceGreaterThan = sum(distances_ii<=distancesToPlot)';
-    diffsToPlot_ii = diffs_ii(lastDistanceGreaterThan,:);
-    
-    plotByMinDistance(((1:nEdges)+nEdges*(ii-1)),:) = diffsToPlot_ii;
-
-end
-[groupedDistanceMeans,groupedDistanceStd,groupedDistanceN] = ...
-    grpstats(plotByMinDistance, distanceGroups,{@(x) mean(x,'omitnan'),@(x) std(x,'omitnan'),@(x) sum(isfinite(x))});
-groupedDistanceTs = groupedDistanceMeans./(groupedDistanceStd./sqrt(groupedDistanceN));
-groupedDistancePs = tcdf(abs(groupedDistanceTs),groupedDistanceN-1,'upper');
-%This code plots distance versus fraction of S remaining. shows very high
-%correlation between the two.
-    %{
-figure(distanceSPlots);
-    for ii = 1:nWebs
-        hold on
-        
-        plot(localMeans(beginnings(ii):endings(ii),localMeanCol('minDistance')),allNodeLevels(beginnings(ii):endings(ii))/allNodeLevels(beginnings(ii))...
-            ,'Color',[.5,.5,.5]...
-            );
-        hold off
-    end
-    q = refline(-1,1);
-    q.LineStyle = '--';
-%}
-for jj = 1:nLocalPropsPlotted
-    figure(localFigAll);
-    freesThisProperty = localMeans(:,localMeanCol(localPropsPlottedFree{jj}));
-    parasThisProperty = localMeans(:,localMeanCol(localPropsPlottedPara{jj}));
-    diffsThisProperty = freesThisProperty-parasThisProperty;
-    [meanF_jj] = grpstats(freesThisProperty,allNodeLevels);
-    [meanP_jj] = grpstats(parasThisProperty,allNodeLevels);
-    meanFAll(jj,:) = meanF_jj;
-    meanPAll(jj,:) = meanP_jj;
-    [meanD_jj,numelD_jj,stdD_jj] = grpstats(diffsThisProperty,allNodeLevels,{@mean,@numel,@std});
-    ts = meanD_jj./(stdD_jj./sqrt(numelD_jj));
-    ts(numelD_jj==1) = nan;
-    Ps = tcdf(abs(ts),numelD_jj-1,'upper');
-    
-    allTs(:,jj) = ts;
-    allPs(:,jj) = Ps;
-    subplot(3,4,jj);
-    
-    hAll{jj} = plot(xAllLevels,meanF_jj,'b',xAllLevels,meanP_jj,'m');
-    set(hAll{jj},{'LineWidth'},{1;1});
-    
-    for ii = 1:nWebs
-        hold on
-        hEveryWeb{jj,ii} = plot(allNodeLevels(beginnings(ii):endings(ii)),freesThisProperty(beginnings(ii):endings(ii))...
-            ,allNodeLevels(beginnings(ii):endings(ii)),parasThisProperty(beginnings(ii):endings(ii))...
-            );
-        set(hEveryWeb{jj,ii},{'LineWidth'},{.5;.5})
-        set(hEveryWeb{jj,ii},{'Color'},{[.7,.7,1];[1 .7 1]})
-        hold off
-        
-    end
-    
-    title(fancyLocalNames{jj},'Interpreter','LaTeX')
-    xlabel('S')
-    ylabel('Mean')
-    
-    figure(localFigDistance) 
-    subplot(3,4,jj);
-    hold on
-        for ii = 1:nWebs
-            thisWeb = (1:nEdges)+(ii-1)*nEdges;
-            plotByMinDistanceThisWeb = plotByMinDistance(thisWeb,jj);
-            hDistances{jj,ii} = plot(distancesToPlot,plotByMinDistanceThisWeb...
-                ,'LineWidth',.5...
-                ,'Color',[.7,.7,.7]);
-        end
-    hDistanceMean = plot(distancesToPlot,groupedDistanceMeans(:,jj)...
-            ,'LineWidth',3 ...
-            ,'Color',[0 0 1]);
-    hold off
-    title(fancyLocalNames{jj},'Interpreter','LaTeX')
-    
-    figure(localFigFirst);
-    xs = localMeans(selectThisLevelGlobal,localMeanCol(localPropsPlottedFree{jj}));
-    ys = localMeans(selectThisLevelGlobal,localMeanCol(localPropsPlottedPara{jj}));
-    gps = localMeans(selectThisLevelGlobal,localMeanCol('web'));
-    markSizes = Ss/3;
-    markColors = colMatrix(arrayfun(@(x)find(x<cVals,1),Cs),:);
-    
-    subplot(3,4,jj);
-    h = gscatter(xs,ys,gps,markColors,'.',markSizes,'off');
-    xlabel('Carnivore Average')
-    ylabel('Parasite Average')
-    title(fancyLocalNames{jj},'Interpreter','LaTeX')
-    if jj == 8
-        xlabel('Carnivore Average')
-    end
-    if jj == 4
-    
-        ylabel('Parasitic Average')
-    end
-    xl = xlim;
-    yl = ylim;
-    xMeans(jj) = mean(xs);
-    yMeans(jj) = mean(ys);
-    diffs = ys-xs;
-    meanDiff = mean(diffs);
-    stdDiff = std(diffs)/sqrt(numel(diffs));
-    tDiff = meanDiff./stdDiff;
-    tDiffs(jj) = tDiff;
-    pDiff = tcdf(abs(tDiff),numel(diffs)-1,'upper');
-    pDiffs(jj) = pDiff;
-    lb = min(xl(1),yl(1));
-    ub = max(xl(2),yl(2));
-    axis([lb ub lb ub]);
-    rl = refline(1,0);
-    rl.Color = [.9,.9,.9];
-    uistack(h,'top')
-    
-        
-end
-    
-    
-alpha = 0.05;
-m = nLocalPropsPlotted;
-alphaSeq = alpha./(m+1-(1:m));
-[pDiffsSorted,Idx] = sort(pDiffs);
-[~,IdxIdx] = sort(Idx);
-rejected = false(nLocalPropsPlotted,1);
-rejected(Idx) = pDiffsSorted<alphaSeq';
-%Replicate above for each level.
-rejectedAllLevels = zeros(nLevels,nLocalPropsPlotted);
-colsAllLevels = cell(nLevels,nLocalPropsPlotted);
-[colsAllLevels{:}] = deal(zeros(1,3));
-lineColRejected = [1 0.5 0.5];
-lineColFailed = [0.8 0.8 0.8];
-for ii = 1:nLevels
-    
-    PsThisLevel = allPs(ii,:);
-    [pSorted,Idx] = sort(PsThisLevel);
-    rejectedThisLevel = false(nLocalPropsPlotted,1);
-    rejectedThisLevel(Idx) = pSorted<alphaSeq;
-    if sum(isnan(pSorted))>0
-        [colsAllLevels{ii,:}] = deal('none');
-    else
-        [colsAllLevels{ii,rejectedThisLevel}] = deal(lineColRejected);
-        [colsAllLevels{ii,~rejectedThisLevel}] = deal(lineColFailed);
-    end
-    
-end
-
-rejectedAllBins = zeros(nEdges,nLocalPropsPlotted);
-colsAllBins = cell(nEdges,nLocalPropsPlotted);
-
-for ii = 1:nEdges
-    PsThisBin = groupedDistancePs(ii,:);
-    [pSorted,Idx] = sort(PsThisBin);
-    thisBinRejected = false(nLocalPropsPlotted,1);
-    thisBinRejected(Idx) = pSorted<alphaSeq;
-    if sum(isnan(pSorted))>0
-        [colsAllBins{ii,:}] = deal('none');
-    else
-        [colsAllBins{ii,thisBinRejected}] = deal(lineColRejected);
-        [colsAllBins{ii,~thisBinRejected}] = deal(lineColFailed);
-    end
-    
-    
-end
-textColRejected = [0.8 0.2 0.2];
-textColFailed = [0.5 0.5 0.5];
-for jj = 1:nLocalPropsPlotted
+    for jj = 1:nLocalPropsPlotted
         figure(localFigFirst);
+        xs = localMeans(selectThisLevelGlobal,localMeanCol(localPropsPlottedFree{jj}));
+        ys = localMeans(selectThisLevelGlobal,localMeanCol(localPropsPlottedPara{jj}));
+        gps = localMeans(selectThisLevelGlobal,localMeanCol('web'));
+        markSizes = Ss/3;
+        markColors = colMatrix(arrayfun(@(x)find(x<cVals,1),Cs),:);
+
         subplot(3,4,jj);
+        h = gscatter(xs,ys,gps,markColors,'.',markSizes,'off');
+        xlabel('Carnivore Average')
+        ylabel('Parasite Average')
+        title(fancyLocalNames{jj},'Interpreter','LaTeX')
+        if jj == 8
+            xlabel('Carnivore Average')
+        end
+        if jj == 4
+
+            ylabel('Parasitic Average')
+        end
+        xl = xlim;
+        yl = ylim;
+        xMeans(jj) = mean(xs);
+        yMeans(jj) = mean(ys);
+        diffs = ys-xs;
+        meanDiff = mean(diffs);
+        stdDiff = std(diffs)/sqrt(numel(diffs));
+        tDiff = meanDiff./stdDiff;
+        tDiffs(jj) = tDiff;
+        pDiff = tcdf(abs(tDiff),numel(diffs)-1,'upper');
+        pDiffs(jj) = pDiff;
+        lb = min(xl(1),yl(1));
+        ub = max(xl(2),yl(2));
+        axis([lb ub lb ub]);
+        rl = refline(1,0);
+        rl.Color = [.9,.9,.9];
+        uistack(h,'top')
+    end
+    
+    [pDiffsSorted,Idx] = sort(pDiffs);
+    [~,IdxIdx] = sort(Idx);
+    rejected = false(nLocalPropsPlotted,1);
+    rejected(Idx) = pDiffsSorted<alphaSeq';
+    
+    for jj = 1:nLocalPropsPlotted
+    subplot(3,4,jj);
         hold on
         xl = xlim();
         yl = ylim();
@@ -360,26 +216,120 @@ for jj = 1:nLocalPropsPlotted
                          );
         hold off
         axis([xl yl]);
-        
-        figure(localFigDistance)
+    end
+    a = colorbar('Position', [0.92 0.11 0.02 .81]...
+                 ,'Limits',[cMapMin,cMapMax]...
+                 );
+
+    cMapMid = round(mean([cMapMin,cMapMax]),3);
+    if min(abs(cMapMid-Cs))<.002
+        cMapMid = [];
+    end
+    newTicks = [cMapMin; cMapMax; cMapMid; Cs];
+    [newTicks, Idx] = sort(newTicks);
+    a.Ticks = newTicks;
+    webCodes = webCodes';
+    if isempty(cMapMid)
+        newTickLabels = [{cMapMin;cMapMax};webCodes(:)];  
+    else
+
+        newTickLabels = [{cMapMin;cMapMax;cMapMid};webCodes(:)];
+    end
+
+    a.TickLabels = newTickLabels(Idx);
+    caxis([cMapMin,cMapMax])
+    title(a,'C')
+    colormap(summer);
+    arrayfun(@(x) set(x,'FontName',figureFont),localFigFirst.Children);
+    set(localFigFirst, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
+    print(sprintf('../figures/initialProps%sLinkage.png',linkageType),'-dpng','-r0')
+    
+end
+
+if plotsToPlot(2)||plotsToPlot(3)||plotsToPlot(4)
+    allNodeLevels = propsGlobal(:,globalCol('S'));
+    endings = [find(diff(allNodeLevels)>0); 
+                numel(allNodeLevels)-1];
+    beginnings = [1; endings(1:end-1)+1];
+    endings = endings -5;
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Draw plots of the agglomerated webs, size on x-axis.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if plotsToPlot(2)
+    localFigAllSizes = figure;
+    
+    xAllLevels = unique(allNodeLevels);
+    nLevels = numel(xAllLevels);
+    meanFAll = zeros(nLocalPropsPlotted,nLevels);
+    meanPAll = zeros(nLocalPropsPlotted,nLevels);
+
+    allTs = zeros(nLevels,nLocalPropsPlotted);
+    allPs = zeros(nLevels,nLocalPropsPlotted);
+
+    hEveryWeb = cell(nLocalPropsPlotted,nWebs);
+    h = cell(nLocalPropsPlotted,1);
+    hAll = cell(nLocalPropsPlotted,1);
+    for jj = 1:nLocalPropsPlotted
+        freesThisProperty = localMeans(:,localMeanCol(localPropsPlottedFree{jj}));
+        parasThisProperty = localMeans(:,localMeanCol(localPropsPlottedPara{jj}));
+        diffsThisProperty = freesThisProperty-parasThisProperty;
+        [meanF_jj] = grpstats(freesThisProperty,allNodeLevels);
+        [meanP_jj] = grpstats(parasThisProperty,allNodeLevels);
+        meanFAll(jj,:) = meanF_jj;
+        meanPAll(jj,:) = meanP_jj;
+        [meanD_jj,numelD_jj,stdD_jj] = grpstats(diffsThisProperty,allNodeLevels,{@mean,@numel,@std});
+        ts = meanD_jj./(stdD_jj./sqrt(numelD_jj));
+        ts(numelD_jj==1) = nan;
+        Ps = tcdf(abs(ts),numelD_jj-1,'upper');
+
+        allTs(:,jj) = ts;
+        allPs(:,jj) = Ps;
         subplot(3,4,jj);
-        hold on
-        hDist = plot([distancesToPlot;distancesToPlot],[zeros(size(distancesToPlot)); groupedDistanceMeans(:,jj)']);
-        set(hDist, {'color'}, colsAllBins(:,jj));
-        set(hDist,'linewidth',3)
-        uistack(hDistanceMean,'top')
-        uistack(hDist,'bottom')
-        rl = refline(0,0);
-        rl.Color = [.5,.5,.5];
-        rl.LineStyle = '--';
-        yl = ylim();
-        ylim(yl);
-        xlabel('Min. Cluster Distance')
-        ylabel('Carnivore $-$ Parasite','Interpreter','LaTeX')
-        hold off
-        
-        figure(localFigAll);
-        subplot(3,4,jj);
+
+        hAll{jj} = plot(xAllLevels,meanF_jj,'b',xAllLevels,meanP_jj,'m');
+        set(hAll{jj},{'LineWidth'},{1;1});
+
+        for ii = 1:nWebs
+            hold on
+            hEveryWeb{jj,ii} = plot(allNodeLevels(beginnings(ii):endings(ii)),freesThisProperty(beginnings(ii):endings(ii))...
+                ,allNodeLevels(beginnings(ii):endings(ii)),parasThisProperty(beginnings(ii):endings(ii))...
+                );
+            set(hEveryWeb{jj,ii},{'LineWidth'},{.5;.5})
+            set(hEveryWeb{jj,ii},{'Color'},{[.7,.7,1];[1 .7 1]})
+            hold off
+
+        end
+
+        title(fancyLocalNames{jj},'Interpreter','LaTeX')
+        xlabel('S')
+        ylabel('Mean')
+    end
+    
+    rejectedAllLevels = zeros(nLevels,nLocalPropsPlotted);
+    colsAllLevels = cell(nLevels,nLocalPropsPlotted);
+    [colsAllLevels{:}] = deal(zeros(1,3));
+
+    
+    for ii = 1:nLevels
+        PsThisLevel = allPs(ii,:);
+        [pSorted,Idx] = sort(PsThisLevel);
+        rejectedThisLevel = false(nLocalPropsPlotted,1);
+        rejectedThisLevel(Idx) = pSorted<alphaSeq;
+        if sum(isnan(pSorted))>0
+            [colsAllLevels{ii,:}] = deal('none');
+        else
+            [colsAllLevels{ii,rejectedThisLevel}] = deal(lineColRejected);
+            [colsAllLevels{ii,~rejectedThisLevel}] = deal(lineColFailed);
+        end
+    end
+    
+    for jj = 1:nLocalPropsPlotted
+               subplot(3,4,jj);
         hold on
         h = plot([xAllLevels';xAllLevels'],[meanFAll(jj,:);meanPAll(jj,:)]);
         set(h, {'color'}, colsAllLevels(:,jj));
@@ -395,64 +345,194 @@ for jj = 1:nLocalPropsPlotted
         axis([0,max(Ss) ylim]);
         ylim(yl);
         hold off
-end
-    %}
-%
-
-figure(localFigFirst);
-hp9 = get(subplot(3,4,12),'Position');
-a = colorbar('Position', [0.92 0.11 0.02 .81]...
-             ,'Limits',[cMapMin,cMapMax]...
-             );
-
-cMapMid = round(mean([cMapMin,cMapMax]),3);
-if min(abs(cMapMid-Cs))<.002
-    cMapMid = [];
-end
-newTicks = [cMapMin; cMapMax; cMapMid; Cs];
-[newTicks, Idx] = sort(newTicks);
-a.Ticks = newTicks;
-webCodes = webCodes';
-if isempty(cMapMid)
-    newTickLabels = [{cMapMin;cMapMax};webCodes(:)];  
-else
-    
-    newTickLabels = [{cMapMin;cMapMax;cMapMid};webCodes(:)];
-end
-
-a.TickLabels = newTickLabels(Idx);
-caxis([cMapMin,cMapMax])
-title(a,'C')
-colormap(summer);
-arrayfun(@(x) set(x,'FontName',figureFont),localFigFirst.Children);
-arrayfun(@(x) set(x,'FontName',figureFont),localFigAll.Children);
-arrayfun(@(x) set(x,'FontName',figureFont),localFigDistance.Children);
-set(localFigFirst, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
-set(localFigAll, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
-set(localFigDistance, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
-%
-figure(localFigFirst);
-print('../figures/initialPropsMajority.png','-dpng','-r0')
-figure(localFigAll);
-print('../figures/allPropsMajority.png','-dpng','-r0')
-figure(localFigDistance);
-print('../figures/allPropsDistMajority.png','-dpng','-r0')
-%}
-%}
-%{
-for ii = 1:nWebs
-    globalFigAll = figure();
-    x = props{ii}.(linkageType).mean.global.nNodes; 
-propCount = 0;    
- for jj = [3,8,4,11,5,12,6,13,7,14]
         
-        propCount = propCount+1;
-        subplot(5,2,propCount)
-        hold on
-            title(globalNames{jj})
-        plot(x,props{ii}.(linkageType).mean.global.(globalNames{jj}),'b')
-        plot(x,props{ii+6}.(linkageType).mean.global.(globalNames{jj}),'k')
-        hold off
- end
+    end
+    
+    arrayfun(@(x) set(x,'FontName',figureFont),localFigAllSizes.Children);
+    set(localFigAllSizes, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
+    print(sprintf('../figures/allPropsBySize%sLinkage.png',linkageType),'-dpng','-r0')
 end
-%}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%This sets up some important distance stuff.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if plotsToPlot(3)||plotsToPlot(4)||plotsToPlot(5)
+    allDistances = localMeans(:,localMeanCol('minDistance'));
+    nEdges = 81;
+    nBins = nEdges-1;
+    dMin = 0;
+    dMax = 0.4;
+    distancesToPlot = linspace(dMin,dMax,nEdges);
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Draw plots of the agglomerated, minimum node distance on x-axis.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if plotsToPlot(3)
+    localFigDistance = figure;
+    hDistances = cell(nLocalPropsPlotted,nWebs);
+    plotByMinDistance = nan(nEdges*nWebs,numel(localPropsPlotted));
+    distanceGroups = repmat((1:nEdges)',nWebs,1);
+    
+    for ii = 1:nWebs
+        distances_ii = allDistances(beginnings(ii):endings(ii));
+
+        valuesFree_ii = localMeans(beginnings(ii):endings(ii),freeIndices);
+        valuesPara_ii = localMeans(beginnings(ii):endings(ii),paraIndices); 
+        diffs_ii = valuesFree_ii - valuesPara_ii;
+
+        lastDistanceGreaterThan = sum(distances_ii<=distancesToPlot)';
+        diffsToPlot_ii = diffs_ii(lastDistanceGreaterThan,:);
+
+        plotByMinDistance(((1:nEdges)+nEdges*(ii-1)),:) = diffsToPlot_ii;
+
+    end
+    
+    [groupedDistanceMeans, groupedDistanceStd, groupedDistanceN] = ...
+        grpstats(plotByMinDistance, distanceGroups...
+                    ,{   @(x) mean(x,'omitnan')...
+                        ,@(x) std(x,'omitnan')...
+                        ,@(x) sum(isfinite(x))...
+                     }...
+                );
+            
+    groupedDistanceTs = groupedDistanceMeans./(groupedDistanceStd./sqrt(groupedDistanceN));
+    groupedDistancePs = tcdf(abs(groupedDistanceTs),groupedDistanceN-1,'upper');
+    
+    save(sprintf('../../Chapter3/code/groupedDistances%sLinkge.mat',linkageType),...
+        'groupedDistanceMeans','groupedDistanceStd','groupedDistanceN'...
+       ,'groupedDistanceTs','groupedDistancePs','plotByMinDistance'...
+       ,'distancesToPlot');
+   
+   for jj = 1:nLocalPropsPlotted
+   subplot(3,4,jj);
+    hold on
+        for ii = 1:nWebs
+            thisWeb = (1:nEdges)+(ii-1)*nEdges;
+            plotByMinDistanceThisWeb = plotByMinDistance(thisWeb,jj);
+            hDistances{jj,ii} = plot(distancesToPlot,plotByMinDistanceThisWeb...
+                ,'LineWidth',.5...
+                ,'Color',[.7,.7,.7]);
+        end
+    hDistanceMean = plot(distancesToPlot,groupedDistanceMeans(:,jj)...
+            ,'LineWidth',3 ...
+            ,'Color',[0 0 1]);
+    hold off
+    title(fancyLocalNames{jj},'Interpreter','LaTeX')
+    end
+   
+    rejectedAllBins = zeros(nEdges,nLocalPropsPlotted);
+    colsAllBins = cell(nEdges,nLocalPropsPlotted);
+
+    for ii = 1:nEdges
+        PsThisBin = groupedDistancePs(ii,:);
+        [pSorted,Idx] = sort(PsThisBin);
+        thisBinRejected = false(nLocalPropsPlotted,1);
+        thisBinRejected(Idx) = pSorted<alphaSeq;
+        if sum(isnan(pSorted))>0
+            [colsAllBins{ii,:}] = deal('none');
+        else
+            [colsAllBins{ii,thisBinRejected}] = deal(lineColRejected);
+            [colsAllBins{ii,~thisBinRejected}] = deal(lineColFailed);
+        end
+    end
+   
+    for jj = 1:nLocalPropsPlotted
+        
+        subplot(3,4,jj);
+        hold on
+        hDist = plot([distancesToPlot;distancesToPlot],[zeros(size(distancesToPlot)); groupedDistanceMeans(:,jj)']);
+        set(hDist, {'color'}, colsAllBins(:,jj));
+        set(hDist,'linewidth',3)
+        uistack(hDistanceMean,'top')
+        uistack(hDist,'bottom')
+        rl = refline(0,0);
+        rl.Color = [.5,.5,.5];
+        rl.LineStyle = '--';
+        yl = ylim();
+        ylim(yl);
+        xlabel('Min. Cluster Distance')
+        ylabel('Carnivore $-$ Parasite','Interpreter','LaTeX')
+        hold off
+
+    end
+    
+    arrayfun(@(x) set(x,'FontName',figureFont),localFigDistance.Children);
+    set(localFigDistance, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
+    print(sprintf('../figures/allPropsDist%sLinkage.png',linkageType),'-dpng','-r0')
+    
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Draw plots of the global Properties, minimum node distance on x-axis
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if plotsToPlot(4)
+    globalPropsPlots = figure;
+    for jj = 1:nLocalPropsPlotted
+        subplot(3,4,jj);
+        hold on
+        for ii = 1:nWebs
+            distances_ii = allDistances(beginnings(ii):endings(ii));
+
+            globalPropsPlot = propsGlobal(beginnings(ii):endings(ii),globalCol(globalPropsPlotted{jj}));
+
+            lastDistanceGreaterThan = sum(distances_ii<=distancesToPlot)';
+            plotMe = globalPropsPlot(lastDistanceGreaterThan,:);
+
+
+            hDistances{jj,ii} = plot(distancesToPlot,plotMe...
+                ,'LineWidth',.5...
+                ,'Color',[.7,.7,.7]);
+        end
+        hold off
+        title(globalPropsPlotted{jj},'Interpreter','LaTeX')
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Draw plots of the mean similarity between various classes of taxa
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if plotsToPlot(5)
+    averageDistanceGroups = figure;
+
+    useFull = false;
+    for ii = 1:nWebs
+        subplot(3,2,ii)
+        title(webCodes{ii});
+        if useFull
+            usedProps = fullProps;
+        else
+            usedProps = reducedProps;
+        end
+                
+        
+        xPlot = cellfun(@(x) min(min(x)),usedProps{ii}.jac);
+        paraParaJac = cellfun(@(s,t) triu(s(t>=0.5,t>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.para(:),'UniformOutput',false);
+        paraCarnJac = cellfun(@(s,t,u) triu(s(t>=0.5,u>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.para(:),usedProps{ii}.carn(:),'UniformOutput',false);
+        paraFreeJac = cellfun(@(s,t,u) triu(s(t>=0.5,u>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.para(:),usedProps{ii}.free(:),'UniformOutput',false);
+        freeFreeJac = cellfun(@(s,t) triu(s(t,t),1),usedProps{ii}.jac(:),usedProps{ii}.free(:),'UniformOutput',false);
+        carnCarnJac = cellfun(@(s,t) triu(s(t>=0.5,t>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.carn(:),'UniformOutput',false);
+            
+        y1 = cellfun(@(x) mean(x(x>0)),paraParaJac);
+        y2 = cellfun(@(x) mean(x(x>0)),paraCarnJac);
+        y3 = cellfun(@(x) mean(x(x>0)),paraFreeJac);
+        y4 = cellfun(@(x) mean(x(x>0)),freeFreeJac);
+        y5 = cellfun(@(x) mean(x(x>0)),carnCarnJac);
+        plot(xPlot,y1,'.',xPlot,y2,'.',xPlot,y3,'.',xPlot,y4,'.',xPlot,y5,'.')
+        legend('pp','pc','pf','ff','cc')
+        title(webCodes{ii})
+        
+    end
+    
+end
+

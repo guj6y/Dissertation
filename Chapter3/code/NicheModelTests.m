@@ -5,8 +5,8 @@
 %accuracy in the classification tree.
 distancesPlotted = [0 0.05 0.1 0.2 0.4];
 addpath(genpath('~/matlab_bgl'));
-nCores = feature('numcores');
-parpool('local',nCores);
+%nCores = feature('numcores');
+%parpool('local',nCores);
 
 for linkages = {'Min','Max'}
 
@@ -30,26 +30,20 @@ for linkages = {'Min','Max'}
 
     propsGlobal = T.propsGlobal;
     globalCol = T.globalCol;
-    adjMatrices = T.adjMatrices;
+    reducedProps = T.reducedProps;
     propsLocal = T.propsLocal;
     localCol = T.localCol;
+    localMeansCol = T.localMeansCol;
+    localMeans = T.propsLocalMeans;
 
-    T=load('../../Chapter2/code/data/Processed/webGeneration.mat','linkListCell');
-    linkListCell = T.linkListCell;
     clear T
 
-    adjMatrices = {...sparse(linkListCell{1}(:,1),linkListCell{1}(:,2),1,max(max(linkListCell{1})),max(max(linkListCell{1})))...
-                  adjMatrices{1}{:}...
-                  ...,sparse(linkListCell{2}(:,1),linkListCell{2}(:,2),1,max(max(linkListCell{2})),max(max(linkListCell{2})))...
-                  ,adjMatrices{2}{:}...
-                  ...,sparse(linkListCell{3}(:,1),linkListCell{3}(:,2),1,max(max(linkListCell{3})),max(max(linkListCell{3})))...
-                  ,adjMatrices{3}{:}...
-                  ...,sparse(linkListCell{4}(:,1),linkListCell{4}(:,2),1,max(max(linkListCell{4})),max(max(linkListCell{4})))...
-                  ,adjMatrices{4}{:}...
-                  ...,sparse(linkListCell{5}(:,1),linkListCell{5}(:,2),1,max(max(linkListCell{5})),max(max(linkListCell{5})))...
-                  ,adjMatrices{5}{:}...
-                  ...,sparse(linkListCell{6}(:,1),linkListCell{6}(:,2),1,max(max(linkListCell{6})),max(max(linkListCell{6})))...
-                  ,adjMatrices{6}{:}...
+    adjMatrices = {reducedProps{1}.linkage{:}...
+                  ,reducedProps{2}.linkage{:}...
+                  ,reducedProps{3}.linkage{:}...
+                  ,reducedProps{4}.linkage{:}...
+                  ,reducedProps{5}.linkage{:}...
+                  ,reducedProps{6}.linkage{:}...
                  }';
 
     
@@ -99,18 +93,24 @@ for linkages = {'Min','Max'}
         count = count+1;
         %first, need to get the empirical Data.
         %Agglomeration level:
-        thisAggLevel = sum(distancesToPlot<=minDistance);
+        
+        getEm = find(diff(propsGlobal(:,globalCol('d_J'))<=minDistance)==-1);
+        webCounter = propsGlobal(getEm,[globalCol('web'),globalCol('counter')]);
+        getEmLocal = sum((propsLocal(:,localCol('web'))==webCounter(:,1)' & propsLocal(:,localCol('counter'))==webCounter(:,2)'),2)>0;
+        empPara = cellfun(@(x) x.para(:)',reducedProps,'UniformOutput',false)';
+        empPara = [empPara{:}]';
+        empPara = empPara(getEm);
+        empCarn = cellfun(@(x) x.carn(:)',reducedProps,'UniformOutput',false)';
+        empCarn = [empCarn{:}]';
+        empCarn = empCarn(getEm);
+        
+        useForTree = cellfun(@(x,y) x|y,empPara,empCarn,'UniformOutput',false);
 
-        sAndWeb = selectors(selectors(:,1) == thisAggLevel,[2 3]);
-        getEm = sum((propsGlobal(:,globalCol('S'))==sAndWeb(:,1)' & propsGlobal(:,globalCol('web'))==sAndWeb(:,2)'),2)>0;
-        getEmLocal = sum((propsLocal(:,localCol('S'))==sAndWeb(:,1)' & propsLocal(:,localCol('web'))==sAndWeb(:,2)'),2)>0;
-        getEmLocalWebs = propsLocal(getEmLocal,localCol('web'));
-        empPara = propsLocal(getEmLocal,localCol('para'));
-        %Free is carn here...
-        empCarn = propsLocal(getEmLocal,localCol('free'));
-        useForTree = (empPara>=0.5)|(empCarn>=0.5);
-
-        empParaCell = cellfun(@(x) empPara(getEmLocalWebs==x),{1,2,3,4,5,6},'UniformOutput',false);
+        empParaCell = empPara;
+        empPara = cell2mat(empParaCell);
+        empParaCell = empParaCell;
+        empCarn = cell2mat(empCarn);
+        useForTree = cell2mat(useForTree);
         empWebs = adjMatrices(getEm);
 
         resCell = cell(6,1);
@@ -149,7 +149,7 @@ for linkages = {'Min','Max'}
         %Get the empirical properties; after the next two lines,
         %empiricalproperties is 2x6; first row is global properties, second row is
         %local.
-        empiricalProperties = cellfun(@(x,y,z) webPropsRaw(x,y,z>0),resCell,conCell,empParaCell','UniformOutput',false);
+        empiricalProperties = cellfun(@(x,y,z) webPropsRaw(x,y,z>0),resCell,conCell,empParaCell,'UniformOutput',false);
         empiricalProperties = reshape([empiricalProperties{:}],3,6);
 
 
@@ -160,7 +160,7 @@ for linkages = {'Min','Max'}
         bigTree = fitctree(X(useForTree,:),empPara(useForTree)>=0.5 ...
                         ,'MaxNumSplits',4 ...
                         ,'PredictorNames',localVariableNames...
-                            )
+                            );
 
 
 webProps = cell(nModels,nWebs);
@@ -173,7 +173,7 @@ webProps = cell(nModels,nWebs);
                webFunctionIn = propertiesWebsToMatch(ii,:);
                tempGlobal = zeros(nWebsPerWeb,nGlobalProps);
                tempLocal = zeros(nWebsPerWeb,nLocalProps);
-               parfor kk = 1:nWebsPerWeb
+               for kk = 1:nWebsPerWeb
                    %WebFunctionOut is a cell array with the appropriate carn-para
                    %differences as well as the global properites.
                    webFunctionOut = webFunction(webFunctionIn,globalCol,bigTree);
