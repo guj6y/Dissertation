@@ -1,4 +1,4 @@
-function [localProperties,globalProperties,localMeans] = agglomProps(A,para,carn,nodeSize,minDistance)
+function [localProperties,globalProperties,localMeans,res,con] = agglomProps(A,para,nodeSize,minDistance,n)
 
 %Check for the connected component; don't worry about the web having basal
 %species, etc. since we are not trying to develop a dynamical model for
@@ -7,48 +7,39 @@ function [localProperties,globalProperties,localMeans] = agglomProps(A,para,carn
 %added benefit that we don't get as many warnings when calculating the
 %trophic leve.
 S0 = length(A);
+
 [n,grps] = graphconncomp(sparse(A),'weak',true,'directed',true);
 
-maxCompSize = 0;
-compSizes = zeros(1,n);
+compSizes = zeros(S0,1);
+nLinks = zeros(S0,1);
 for ii = 1:n
-    sizeii = sum(grps==ii);
+    thisGrp = grps==ii;
+    sizeii = sum(thisGrp);
+    nLinks(ii) = sum(sum(A(thisGrp,thisGrp)));
     compSizes(ii) = sizeii;
-    if sizeii>maxCompSize
-        maxCompSize=sizeii;
-        largeComp = ii;
-    end
 end
-numLargest = sum(compSizes==maxCompSize);
 
-if numLargest>1
-    if maxCompSize<=(S0/4)
-        fprintf('Web has lost more than half of its nodes. Returning nans.\n')
-        localProperties = nan(1,18);
-        globalProperties = nan(1,15);
-        return
-    end
-    comps = 1:n;
-    fprintf('Tie in largest component... averaging them.\n')
-    localProperties = zeros(1,9);
-    globalProperties = zeros(1,15);
-    %TODO: fix this with new structures.
-    for ii = comps(compSizes==maxCompSize)
-        B = A(grps==ii,grps==ii);
-        para_ = para(grps==ii);
-        [loc,glob] = agglomProps(B,para_);
-        localProperties = localProperties+loc/numLargest;
-        globalProperties = globalProperties+glob/numLargest;
-    end
-    globalProperties(end) = n;
-    return
-end
+sortedComps = sortrows([(1:S0)', compSizes, nLinks, rand(S0,1)],[-2 -3 4]);
+numLargest = sum(sortedComps(:,2) == sortedComps(1,2));
+
+winners = grps==sortedComps(1);
 %I like winners. Winners get to stay.
-winners = grps==largeComp;
+
 A = A(winners,winners);
 [res,con] = find(A);
+
+if isempty(res) == 1
+    localProperties = zeros(1,19);
+    globalProperties = zeros(1,20);
+    localMeans = zeros(1,30);
+    res = 0;
+    con = 0;
+    return
+end
 para = para(winners);
-carn = carn(winners);
+%carn shouldn't be carried around like this; it is a STRUCTURAL property!
+%(though it's weird maybe that parasite aren't staying carnivores..?)
+%carn = carn(winners);
 nodeSize = nodeSize(winners);
 
 
@@ -66,11 +57,12 @@ gen0 = full(sum(A))';
 binPara = para>0.5;
 basal = gen0==0;
 binFree = ~binPara;
-binFree(basal) = false;
 binCons = (~basal);
 %Identify carnivores Only!
-binCarns = true(S,1);
-binCarns(con(basal(res))) = false;
+carn = true(S,1);
+carn(con(basal(res))) = false;
+carn(basal) = false;
+carn(binPara) = false;
 
 
 weighted=false;
@@ -85,7 +77,7 @@ else
     carn = carn>0.5;
     para = para>=0.5;
 end
-gen = (gen0-mean(gen0))/std(gen0);
+gen = (gen0)./mean(gen0);
 genFree = wmean(gen,carn);
 genPara = wmean(gen,para);
 
@@ -219,32 +211,44 @@ Scon = sum(binCons);
 Ccon = Lcon/Scon^2;
 
 carn = carn + 0;
-para = para + 0;
+free = ~para;
 
-Lff = sum(sum(A.*(carn*carn')));
-Sf = sum(binFree);
+Lff = sum(free(res)&free(con));
+Sf = sum(free);
 Cff = Lff/Sf^2;
 
-Lpp = sum(sum(A.*(para*para')));
-Sp = sum(binPara);
+Lpp = sum(para(res)&para(con));
+Sp = sum(para);
 Cpp = Lpp/Sp^2;
 
-Lfp = sum(sum(A.*(carn*para')));
+Lfp = sum(free(res)&para(con));
 Cfp = Lfp/(Sp*Sf);
 
-Lpf = sum(sum(A.*(para*carn')));
+Lpf = sum(para(res)&free(con));
 Cpf = Lpf/(Sp*Sf);
+
+Cf = (Lff + Lpf)/(Sf*(Sp+Sf));
+Cp = (Lpp + Lfp)/(Sp*(Sp+Sf));
 
 fPar = Sp/(Sp+Sf);
 
-top = sum(vul == 0)/S;
-bas = sum(gen==0)/S;
-int = 1-top-bas;
-herb = sum(abs(patl-2)<1e-2)/S;
-omn = sum(mod(patl,1)>1e-2)/S;
 
-para = para./nodeSize;
-carn = carn./nodeSize;
+top = sum(vul == 0)/S;
+bas = mean(basal);
+int = 1-top-bas;
+haveBasalRes = false(S,1);
+haveBasalRes(con(basal(res))) = true;
+haveConRes = false(S,1);
+haveConRes(con(~basal(res))) = true;
+herbs = haveBasalRes&(~haveConRes);
+carns = haveConRes&(~haveBasalRes);
+omns = haveBasalRes&haveConRes;
+herb = mean(herbs);
+omn = mean(omns);
+
+can = sum(res==con)/S;
+fCarn = mean(carn);
+
 
 localProperties = [     
                          vul...                 1
@@ -265,13 +269,14 @@ localProperties = [
                         ,ccMid...               16
                         ,ccIn...                17
                         ,ccOut...               18
+                        ,repmat(n,S,1)...       19
                     ];
                 
 
 
 globalProperties = [
                    S...             1   
-                  ,Ccon...          2
+                  ,Cf...            2
                   ,Cff...           3
                   ,Cpp...           4
                   ,Cfp...           5
@@ -286,6 +291,10 @@ globalProperties = [
                   ,omn...           14
                   ,C...             15
                   ,minDistance...   16
+                  ,fCarn...         17
+                  ,Cp...            18
+                  ,Sf...            19
+                  ,n...             20
                       ];     
 localMeans = [                 
                  vulFree...                 1
@@ -317,5 +326,6 @@ localMeans = [
                 ,ccInPara...                 27
                 ,ccOutCarn...                 28
                 ,ccOutPara...                 29
+                ,n...                         30
             ];
 end

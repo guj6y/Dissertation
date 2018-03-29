@@ -1,6 +1,24 @@
-function [properties,webs] = agglom(res,con,para0)
+function [properties,fullStruct,reducedStruct] = agglom(res,con,para0,fLinkage)
 
 S = numel(para0);
+
+adjMatricesReduced = cell(S,1);
+jacMatricesReduced = cell(S,1);
+
+linkageMatrices = cell(S,1);
+jacMatricesFull = cell(S,1);
+
+paraFullCell = cell(S,1);
+carnFullCell = cell(S,1);
+freeFullCell = cell(S,1);
+
+paraReducedCell = cell(S,1);
+carnReducedCell = cell(S,1);
+freeReducedCell = cell(S,1);
+
+paraFullCell{1} = para0;
+paraReducedCell{1} = para0;
+
 nSpeciesPerNode = ones(S,1);
 nParasitesPerNode = para0+0;
 para0=para0+0;
@@ -12,9 +30,18 @@ carn0(con(basal(res))) = false;
 carn0(basal) = false;
 carn0(para0>0) = false;
 
+linkageMatrices{1} = A;
+carnFullCell{1} = carn0;
+carnReducedCell{1} = carn0;
+
+freeFullCell{1} = ~(basal|para0);
+freeReducedCell{1} = ~(basal|para0);
+
 carn0 = carn0+0;
 nCarnivoresPerNode = carn0;
-[nodalProps,globalProps,localMeans] = agglomProps(A,para0,carn0,nSpeciesPerNode,0);
+nBasalPerNode = basal;
+[nodalProps,globalProps,localMeans] = agglomProps(A,para0,nSpeciesPerNode,0,1);
+jaccardMatrix = 1 - calculateSimilarity(res,con);
 
 [S,nLocalProps] = size(nodalProps);
 nGlobalProps = length(globalProps);
@@ -24,26 +51,26 @@ bigLocalPropertiesMatrix = -9999*ones(S*(S+1)/2,nLocalProps);
 bigGlobalPropertiesMatrix = -9999*ones(S,nGlobalProps);
 bigLocalMeansMatrix = -9999*ones(S,nLocalMeans);
 
+
 bigLocalPropertiesMatrix(1:S,1:nLocalProps) = nodalProps;
 bigGlobalPropertiesMatrix(1,:) = globalProps;
 bigLocalMeansMatrix(1,:) = localMeans;
-
+adjMatricesReduced{1} = A;
+jacMatricesFull{1} = jaccardMatrix;
+jacMatricesReduced{1} = jaccardMatrix;
 startingPoints = [0;cumsum((S:-1:2)')+1];
-findStartingPoints = ((S):-1:1)';
+findStartingPoints = linspace(S,1,S)';
 
 res0 = res;
 con0 = con;
 linkageMatrix = full(sparse(res0,con0,1,S,S));
 
-
-jaccardMatrices = cell(S-10,1);
-
 Iall = zeros(S-1,1);
 Jall = zeros(S-1,1);
 %calculate the jaccard distance between all nodes:
-jaccardMatrix = 1 - calculateSimilarity(res,con);
 
-ii = 0;
+
+ii = 1;
 nNodes = length(jaccardMatrix);
 while nNodes > 10
     minDistance = min(jaccardMatrix(:));
@@ -70,49 +97,10 @@ while nNodes > 10
     
     IJSourceSinkSorted = IJ(nRows*(IDX-1)+(1:nRows)');
     sourceSinkSize = sourceSinkSize(nRows*(IDX-1)+(1:nRows)');
-    
-    %We preferentially merge smaller nodes first.
-    [~, IDX] = sort(sourceSinkSize(:,1));
-    sourceSinkSizeSorted = sourceSinkSize(IDX,:);
-    IJSorted = IJSourceSinkSorted(IDX,:);
-    
-    %Now, preferentially merge pairs with same size source to the smaller
-    %sink: tie breaker strives to equalize node size.
-    for thisSourceSize = unique(sourceSinkSizeSorted(:,1))'
-        %Find the links with the same source size:
-        sortTheseLinks = sourceSinkSizeSorted(:,1) == thisSourceSize;
-        
-        %Pick out the subsets of size array and IJ array
-        linksThisSourceSize = sourceSinkSizeSorted(sortTheseLinks,:);
-        IJThisSourceSize = IJSorted(sortTheseLinks,:);
-        
-        %Figure out the right order for those subsets.
-        [~, IDX] = sort(linksThisSourceSize(:,2));
-        
-        %Sort those subsets.
-        linksThisSourceSizeSorted = linksThisSourceSize(IDX,:);
-        IJThisSourceSizeSorted = IJThisSourceSize(IDX,:);
-        
-        %finally, need to break ties between sink sizes.
-        for thisSinkSize = unique(linksThisSourceSizeSorted(:,2))'
-            %Of the links with the given source size, pick those with sinks
-            %of the current size.
-            breakTheseSinkTies = linksThisSourceSizeSorted(:,2)==thisSinkSize;
-            %How many links need to be re-arranged?
-            numSinkTies = sum(breakTheseSinkTies);
-            %Get a new order for those to be re-arranged.
-            brokenTies = randsample(numSinkTies,numSinkTies);
-            %rearrange those links only.
-            IJThisSourceSizeSorted(breakTheseSinkTies,:) = IJThisSourceSizeSorted(brokenTies,:);
-            linksThisSourceSizeSorted(breakTheseSinkTies,:) = linksThisSourceSizeSorted(brokenTies,:);
-        end
-        %Accept the new ordering of this portion of the IJsorted array.
-        IJSorted(sortTheseLinks,:) = IJThisSourceSizeSorted;
-        %likewise for thesourceSinkSizeSOrted array. (this might not be
-        %used from her on out.
-        sourceSinkSizeSorted(sortTheseLinks,:) = linksThisSourceSizeSorted;
-        
-    end
+    tieBreakers = rand(size(I));
+    %DID WAY TOO MUCH WORK HERE. Sortrows is way better!
+    [~, Idx] = sortrows([sourceSinkSize tieBreakers], [2,1,3]);
+    IJSorted = IJSourceSinkSorted(Idx,:);
     
     %NOW, re-define I and J:
     I = IJSorted(:,1);
@@ -127,8 +115,7 @@ while nNodes > 10
     
     while numel(I)>0
         ii = ii+1;
-        linkageMatrixCell{ii} = linkageMatrix;
-        jaccardMatrices{ii} = jaccardMatrix;
+        
         
         %The order of the links is now set. If the current source (I(1) =
         %Ihead) is supposed to merge with any other sinks, remove those
@@ -171,7 +158,8 @@ while nNodes > 10
         likageMatrixNew(:,I(1)) = [];
 
         linkageMatrix = likageMatrixNew;
-
+        linkageMatrices{ii} = linkageMatrix;
+        
         %Update the distance matrices
         jaccardMatrixNew = jaccardMatrix;
 
@@ -184,59 +172,117 @@ while nNodes > 10
         jaccardMatrixNew(:,I(1)) = [];
         jaccardMatrixNew(eye(size(jaccardMatrixNew))>0)=1;
         jaccardMatrix = jaccardMatrixNew;
-
+        
+        jacMatricesFull{ii} = jaccardMatrix;
+        
+        
         nNodes = length(jaccardMatrix);
-        if nNodes ==10
-            break
-        end
         
         nSpeciesPerNode(J(1)) = nSpeciesPerNode(J(1)) + nSpeciesPerNode(I(1));
         nParasitesPerNode(J(1)) = nParasitesPerNode(J(1)) + nParasitesPerNode(I(1));
         nCarnivoresPerNode(J(1)) = nCarnivoresPerNode(J(1)) + nCarnivoresPerNode(I(1));
+        nBasalPerNode(J(1)) = nBasalPerNode(J(1)) + nBasalPerNode(I(1));
         
         nSpeciesPerNode(I(1)) = [];
         nParasitesPerNode(I(1)) = [];
         nCarnivoresPerNode(I(1)) = [];
+        nBasalPerNode(I(1)) = [];
+        
+        %Fixing the counting after deleting nodes
+        I(I>I(1)) = I(I>I(1))-1;
+        J(J>I(1)) = J(J>I(1))-1;
+        %Delete the nodes
+        I(1) = [];
+        J(1) = [];
         
         para = nParasitesPerNode./nSpeciesPerNode;
         carn = nCarnivoresPerNode./nSpeciesPerNode;
+        basal = nBasalPerNode./nSpeciesPerNode;
+        
+        paraFullCell{ii} = para;
+        carnFullCell{ii} = carn;
+        freeFullCell{ii} = ~((basal>=0.5)|(para>=0.5));
         
         %Max Linkage Criterion
+        %{
         A = linkageMatrix>0;
         adjacencyMatrixCell{ii} = A;
-        %{
+        %}
         maxLinkageMatrix = nSpeciesPerNode*nSpeciesPerNode';        
         %Mean linkage criterion
         %
         %
-        A = linkageMatrix>=0.5*maxLinkageMatrix;
-        adjacencyMatrixCell{ii} = A;
-        %
+        A = linkageMatrix>=fLinkage*maxLinkageMatrix;
+        
+        %{
         %Min Linkage Criterion
         A = linkageMatrix==maxLinkageMatrix;
         %}
-        %
-        [localProps, globalProps, localMeans] = agglomProps(A,para,carn,nSpeciesPerNode,minDistance);
-        startHere = startingPoints(nNodes==findStartingPoints);
-        endHere = startHere+nNodes-1;
+      
         
+        [localProps, globalProps, localMeans, res, con] = agglomProps(A,para,nSpeciesPerNode,minDistance,ii);
+        
+        nNodesReduced = globalProps(1);
+        startHere = startingPoints(nNodes==findStartingPoints);
+        
+        
+        if res == 0 
+            A = 0;
+            jaccardReduced = 0;
+            nNodesReduced = 1;
+            endHere = startHere + nNodesReduced - 1;
+        else
+            A = sparse(res,con,1,nNodesReduced,nNodesReduced)>0;
+            jaccardReduced = 1 - calculateSimilarity(res,con);
+            endHere = startHere+nNodesReduced-1;
+        end
+        
+        
+        jacMatricesReduced{ii} = jaccardReduced;
         bigLocalPropertiesMatrix(startHere:endHere,:) = localProps;
-        bigGlobalPropertiesMatrix(nNodes==findStartingPoints,:) = globalProps;
-        bigLocalMeansMatrix(nNodes==findStartingPoints,:) = localMeans;
+        bigGlobalPropertiesMatrix(ii,:) = globalProps;
+        bigLocalMeansMatrix(ii,:) = localMeans;
+        adjMatricesReduced{ii} = A;
+        
+        paraReducedCell{ii} = localProps(:,10);
+        carnReducedCell{ii} = localProps(:,11);
+        freeReducedCell{ii} = ~((localProps(:,2)==0)|localProps(:,10));
+        
+        
 
-        I(I>I(1)) = I(I>I(1))-1;
-        J(J>I(1)) = J(J>I(1))-1;
-        I(1) = [];
-        J(1) = [];
 
     end
 
 end
 
-webs = adjacencyMatrixCell;
+
 properties.local = bigLocalPropertiesMatrix(bigLocalPropertiesMatrix(:,1)~=-9999,:);
 properties.global = bigGlobalPropertiesMatrix(bigGlobalPropertiesMatrix(:,1)~=-9999,:);
 properties.localMeans = bigLocalMeansMatrix(bigLocalMeansMatrix(:,1)~=-9999,:);
+jacMatricesFull(cellfun(@isempty,jacMatricesFull)) =[];
+linkageMatrices(cellfun(@isempty,linkageMatrices)) =[];
+paraFullCell(cellfun(@isempty,paraFullCell)) =[];
+carnFullCell(cellfun(@isempty,carnFullCell)) =[];
+freeFullCell(cellfun(@isempty,freeFullCell)) =[];
+jacMatricesReduced(cellfun(@isempty,jacMatricesReduced)) =[];
+adjMatricesReduced(cellfun(@isempty,adjMatricesReduced)) =[];
+paraReducedCell(cellfun(@isempty,paraReducedCell)) =[];
+carnReducedCell(cellfun(@isempty,carnReducedCell)) =[];
+freeReducedCell(cellfun(@isempty,freeReducedCell)) =[];
+
+fullStruct = struct('jac',{jacMatricesFull}...
+                  ,'linkage',{linkageMatrices}...
+                  ,'para',{paraFullCell}...
+                  ,'carn',{carnFullCell}...
+                  ,'free',{freeFullCell}...
+                  );
+reducedStruct = struct('jac',{jacMatricesReduced}...
+                     ,'linkage',{adjMatricesReduced}... 
+                     ,'para',{paraReducedCell}...
+                     ,'carn',{carnReducedCell}...
+                     ,'free',{freeReducedCell}...
+                     );
+
 %{
 propertiesMean.local = localPropertiesMean;
 propertiesMean.global = globalPropertiesMean;
