@@ -35,7 +35,6 @@ allYs = zeros(nWebs,9);
 allXs = zeros(nWebs,9);
 
 webCodes = {'BSQ','CSM','EPB','FF','OH','STB'};
-varNames = {'$VUL$','$GEN$','$PATL$','$CC$','$EIG$','$C_B$','$C_EB$','$\overline{v_r}$','$\overline{g_c}$'};
 webCodes = webCodes(webs);
 
 
@@ -502,10 +501,18 @@ end
 %Draw plots of the mean similarity between various classes of taxa
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+fullWebNames = {'(a) Bahia San Quintin'...
+               ,'(b) Carpinteria Salt Marsh'...
+               ,'(c) Estero de Punta Banda'...
+               ,'(d) Otago Harbor'...
+               ,'(e) Sylt Tidal Basin'...
+               ,'(f) Flensburg Fjord'};
+           
+           shortWebNames = {'bahia','carp','punta','flens','otago','sylt','meta'};
 if plotsToPlot(5)
     averageDistanceGroups = figure;
 
-    useFull = false;
+    useFull = true;
     for ii = 1:nWebs
         subplot(3,2,ii)
         title(webCodes{ii});
@@ -520,19 +527,26 @@ if plotsToPlot(5)
         paraParaJac = cellfun(@(s,t) triu(s(t>=0.5,t>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.para(:),'UniformOutput',false);
         paraCarnJac = cellfun(@(s,t,u) triu(s(t>=0.5,u>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.para(:),usedProps{ii}.carn(:),'UniformOutput',false);
         paraFreeJac = cellfun(@(s,t,u) triu(s(t>=0.5,u>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.para(:),usedProps{ii}.free(:),'UniformOutput',false);
+        carnFreeJac = cellfun(@(s,t,u) triu(s(t>=0.5,u>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.carn(:),usedProps{ii}.free(:),'UniformOutput',false);
         freeFreeJac = cellfun(@(s,t) triu(s(t,t),1),usedProps{ii}.jac(:),usedProps{ii}.free(:),'UniformOutput',false);
         carnCarnJac = cellfun(@(s,t) triu(s(t>=0.5,t>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.carn(:),'UniformOutput',false);
+        
             
         y1 = cellfun(@(x) mean(x(x>0)),paraParaJac);
         y2 = cellfun(@(x) mean(x(x>0)),paraCarnJac);
         y3 = cellfun(@(x) mean(x(x>0)),paraFreeJac);
         y4 = cellfun(@(x) mean(x(x>0)),freeFreeJac);
         y5 = cellfun(@(x) mean(x(x>0)),carnCarnJac);
-        plot(xPlot,y1,'.',xPlot,y2,'.',xPlot,y3,'.',xPlot,y4,'.',xPlot,y5,'.')
-        legend('pp','pc','pf','ff','cc')
-        title(webCodes{ii})
-        
+        h = plot(xPlot,y1,'.',xPlot,y2,'.',xPlot,y3,'.',xPlot,y4,'.',xPlot,y5,'.');
+        arrayfun(@(x) set(x,'MarkerSize',8),h);
+        legend('Parasites','Par. to Carn.'...
+            ,'Par. to F. Livers','Free Livers','Carnivores','Location','SouthEast')
+        ylabel('Mean jaccard Distance')
+        xlabel('Minimum Cluster Distance')
+        title(fullWebNames{ii})
+        arrayfun( @(x) set(x,'FontName','CMU Serif'),averageDistanceGroups.Children)
     end
+    print(sprintf('../figures/meanClassDist.png'),'-dpng','-r0')
     
 end
-
+%print(sprintf('../figures/allPropsDist%sLinkage.png',linkageType),'-dpng','-r0')

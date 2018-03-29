@@ -96,10 +96,10 @@ fancyNames = {'$v$'...                  1
              ,'$C_{EB}$'...             6
              ,'$v_r$'...                7
              ,'$g_c$'...                8
-             ,'$\gamma^{cyc}$'...       9
-             ,'$\gamma^{mid}$'...       10
-             ,'$\gamma^{snk}$'...       11
-             ,'$\gamma^{src}$'...       12
+             ,'$\gamma^{cr}$'...       9
+             ,'$\gamma^{rc}$'...       10
+             ,'$\gamma^{r}$'...       11
+             ,'$\gamma^{c}$'...       12
              };
 nPred = numel(variableNames);
 
@@ -407,7 +407,7 @@ webBySpecies = propsLocal(:,localCol('web'));
 
 %predFrequency = zeros(nEdges,nPred-1);
 shortLocalCol = containers.Map(variableNames,1:13);
-nReps = round(logspace(2,3,81));
+nReps = round(logspace(1,2,81));
 %nReps = round(linspace(sqrt(10),sqrt(100),81).^2);
 try
     load(sprintf('predFrequency%sLinkage.mat',linkageType));
@@ -560,11 +560,11 @@ yyaxis left
 hold on
 spy(predsUsedBin','k.');
 h2Grid = plot([0;82],repmat(1:12,2,1)','-','Color',[0.8 0.8 0.8]);
-xlim(xl*200);
+xlim(xl*100);
 hold off
 title('(b) Predictors Used')
 yyaxis right
-plot(distancesToPlot*100+1,meanWebSizes);
+plot(distancesToPlot*200+1,meanWebSizes);
 %
 set(ax2.YAxis(1)...
                    ,'TickValues',1:12 ...
@@ -582,7 +582,7 @@ spy(predsUsedBin','k.');
 hold off
 
 ax2.PlotBoxAspectRatioMode = 'auto';
-ax2.XAxis.TickValues = ax1.XAxis.TickValues*100+1;
+ax2.XAxis.TickValues = ax1.XAxis.TickValues*200+1;
 ax2.XAxis.TickLabels = ax1.XAxis.TickLabels;
 ax2.YAxis(2).MinorTick='on';
 
@@ -600,6 +600,7 @@ ax1Pos(2) = ax2Pos(2) + ax2Pos(4) + 0.05;
 ax1Pos(4) = ax1Top - ax1Pos(2) + 0.03;
 ax2.Position = ax2Pos;
 ax1.Position = ax1Pos;
+
 print(sprintf('../figures/ParasiteAcc%sLinkage.png',linkageType),'-dpng','-r0')
 
 save(sprintf('../../Chapter3/code/selectors%sLinkge.mat',linkageType),'selectors');

@@ -2,6 +2,7 @@ function [cEB,spsFromBasal,totalDistanceFromBasal,minSpToBasal,numBasalCon] = ec
 %This function calculates the ecological betweenness for all consumers
 %using Brande's algorithm.
 
+
 n = max([res;con]);
 sList = 1:n;
 cEB = zeros(n,1);

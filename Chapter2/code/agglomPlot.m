@@ -83,7 +83,7 @@ localMeanNames = {
                 ,'ccOutPara'        ...       30
                 ,'counter'                 ...31
             };
-for linkageTypes = {'Max','Min','Mean'}
+for linkageTypes = {'Max'}
     %linkageType = 'Max';
     linkageType = linkageTypes{:};
     if strcmp(linkageType,'Max')

@@ -39,7 +39,11 @@
         'Metaweb_Nodes.csv'};        %No body sizes
 
     numColNodes = [46,46,46,41,41,41,46];
-
+    
+    OGConBSCell = cell(3,1);
+    OGResBSCell = cell(3,1);
+    OGLinkTypeCell = cell(3,1);
+    
     nWebs = 6;
     
     if ~exist('concomittantWebs','var')
@@ -276,7 +280,9 @@
         cd('..');
         nodeDatas{ii} = nodeData;
         nodeData = sortrows(nodeData,'NodeID');
-
+        
+        
+        
         %I hate using unique, but..
         idList = unique([res0;con0]);
         basalIds = setdiff(res0,con0);
@@ -316,8 +322,50 @@
 
             end
         end
+        %Some years later, came back andthought it woud be nice to look at
+        %OG data. this turns out to be a much simpler way.
+        if ii<=3
+        nNodes = numel(nodeData.NodeID);
+        nodeToIdx = containers.Map(nodeData.NodeID,1:nNodes);
         
+        OGCon = linkData.ConsumerNodeID;
+        OGRes = linkData.ResourceNodeID;
+        OGLinkType = linkData.LinkTypeID;
         
+        OGGoodLinks = sum(OGLinkType == linkTypesIncluded,2)>0;
+        OGParaLinks = sum(OGLinkType == linkTypesPara,2)>0;
+        
+        OGConBS = nodeData.BodySize_g_(arrayfun(@(x) nodeToIdx(x),OGCon));
+        OGResBS = nodeData.BodySize_g_(arrayfun(@(x) nodeToIdx(x),OGRes));
+        
+        OGEctoVert = sum([cellfun(@(x)~isempty(x),strfind(nodeData.Class,'Agnatha'))...
+                         ,cellfun(@(x)~isempty(x),strfind(nodeData.Class,'Chondrichthyes'))...
+                         ,cellfun(@(x)~isempty(x),strfind(nodeData.Class,'Ostheichthyes'))...
+                        ,cellfun(@(x)~isempty(x),strfind(nodeData.Class,'Amphibia'))...
+                        ,cellfun(@(x)~isempty(x),strfind(nodeData.Class,'Reptilia'))...
+                        ,cellfun(@(x)~isempty(x),strfind(nodeData.Class,'Osteichthyes'))...
+                      ],2);
+        
+        OGEndo = sum([cellfun(@(x)~isempty(x),strfind(nodeData.Class,'Aves'))...
+                         ,cellfun(@(x)~isempty(x),strfind(nodeData.Class,'Mammalia'))...
+                         ],2);
+        
+        OGPara = false(nNodes,1);
+        OGPara( arrayfun(@(x) nodeToIdx(x),OGCon(OGParaLinks))) = true;
+                     
+        OGInvert = ~(OGEctoVert|OGEndo|OGPara);
+        
+        OGLinkType = OGInvert + 2*OGEctoVert + 3*OGEndo + 4*OGPara;
+        OGLinkType = OGLinkType(arrayfun(@(x) nodeToIdx(x),OGCon));
+        
+        OGConBS = OGConBS(OGGoodLinks);
+        OGResBS = OGResBS(OGGoodLinks);
+        OGLinkType = OGLinkType(OGGoodLinks);
+        definedBS = isfinite(OGConBS)&isfinite(OGResBS);
+        OGConBSCell{ii} = OGConBS(definedBS);
+        OGResBSCell{ii} = OGResBS(definedBS);
+        OGLinkTypeCell{ii} = OGLinkType(definedBS);
+        end
         %The total number of species in the Data set; the final number included
         %in my foodweb may be less than this!!  Actually it's not excactly
         %that for carpinteria, punta and bahia because of how their data is
