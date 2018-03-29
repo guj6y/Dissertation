@@ -5,8 +5,8 @@
 %accuracy in the classification tree.
 distancesPlotted = [0 0.05 0.1 0.2 0.4];
 addpath(genpath('~/matlab_bgl'));
-%nCores = feature('numcores');
-%parpool('local',nCores);
+nCores = feature('numcores');
+parpool('local',nCores);
 
 for linkages = {'Min','Max'}
 
@@ -125,7 +125,7 @@ for linkages = {'Min','Max'}
         %The plan is to calculate 100 webs with each proposed model for each web.
         %We then compare the average performance across all 6 webs.
 
-        nWebsPerWeb = 1;
+        nWebsPerWeb = 1000;
 
         webFunctions = {@nicheModelRandCon;
                         ...@nicheModelRandCarn;
