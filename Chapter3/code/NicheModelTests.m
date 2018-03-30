@@ -8,7 +8,7 @@ addpath(genpath('~/matlab_bgl'));
 nCores = feature('numcores');
 parpool('local',nCores);
 
-nWebsPerWeb = 1000;
+nWebsPerWeb = 28;
 
 webFunctions = {@nicheModelRandCon;
                 ...@nicheModelRandCarn;
@@ -165,13 +165,14 @@ for linkages = {'Min','Max'}
                             );
 
 
-webProps = cell(nModels,nWebs);
+        webProps = cell(nModels,nWebs);
         for ii = 1:nModels
            webFunction = webFunctions{ii};
+           fprintf('nicheModel no %u\n',ii);
            for jj = 1:nWebs
                %Just takes it all in; wanted this to be as standardized as
                %possible :):
-
+               fprintf('web no %u\n',jj);
                webFunctionIn = propertiesWebsToMatch(ii,:);
                tempGlobal = zeros(nWebsPerWeb,nGlobalProps);
                tempLocal = zeros(nWebsPerWeb,nLocalProps);
@@ -189,8 +190,10 @@ webProps = cell(nModels,nWebs);
                warning('off','all')
            end
         end
-        save(sprintf('NicheTestResults%uDistance%sLinkageDistance%u',linkageType,count)...
+        fprintf('saving...\n')
+        save(sprintf('NicheTestResults%sLinkage-Distance%u',linkageType,count)...
             ,'carnParaDiffs','globalProps','treeProps');
+        fprintf('done.\n')
    end
 end
 clear carnParaDiffs globalProps treeProps
