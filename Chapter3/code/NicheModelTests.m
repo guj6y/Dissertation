@@ -8,6 +8,19 @@ addpath(genpath('~/matlab_bgl'));
 nCores = feature('numcores');
 parpool('local',nCores);
 
+nWebsPerWeb = 1000;
+
+webFunctions = {@nicheModelRandCon;
+                ...@nicheModelRandCarn;
+                @nicheModelRandTree;
+                @invNM1;
+                @invNM2;
+                @invNM3};
+nModels = numel(webFunctions);
+nWebs = 6;
+nLocalProps = 12;
+nGlobalProps = 18;
+
 for linkages = {'Min','Max'}
 
     linkageType = linkages{:};
@@ -125,18 +138,7 @@ for linkages = {'Min','Max'}
         %The plan is to calculate 100 webs with each proposed model for each web.
         %We then compare the average performance across all 6 webs.
 
-        nWebsPerWeb = 1000;
-
-        webFunctions = {@nicheModelRandCon;
-                        ...@nicheModelRandCarn;
-                        @nicheModelRandTree;
-                        @invNM1;
-                        @invNM2;
-                        @invNM3};
-        nModels = numel(webFunctions);
-        nWebs = 6;
-        nLocalProps = 12;
-        nGlobalProps = 18;
+        
 
         carnParaDiffs = cell(nModels,nWebs);
         globalProps = cell(nModels,nWebs);
@@ -168,7 +170,7 @@ webProps = cell(nModels,nWebs);
            webFunction = webFunctions{ii};
            for jj = 1:nWebs
                %Just takes it all in; wanted this to be as standardized as
-               %possible :)
+               %possible :):
 
                webFunctionIn = propertiesWebsToMatch(ii,:);
                tempGlobal = zeros(nWebsPerWeb,nGlobalProps);
@@ -184,6 +186,7 @@ webProps = cell(nModels,nWebs);
                end
                carnParaDiffs{ii,jj} = tempLocal;
                globalProps{ii,jj} = tempGlobal;
+               warning('off','all')
            end
         end
         save(sprintf('NicheTestResults%uDistance%sLinkageDistance%u',linkageType,count)...
