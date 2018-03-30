@@ -7,7 +7,7 @@
 \chapter{Empirical Food Webs and the Parasitic Niche}
 
 \section{Abstract}
-While previous studies have investigated the appearance of parasites in food
+While previous studies have investigated the occurrence of parasites in food
 webs, none to the author's knowledge were dedicated solely to the
 differentiation of free-living from parasitic taxa; this difference was always
 taken to be self-evident. We question that premise and ask in what ways
@@ -27,7 +27,7 @@ studied by Mays 40 years ago - display predictable patterns of interactions.
 It has been shown that the body size relationships between predator and prey,
 while varying between habitat categories and metabolic classes, consistently
 show that predators eat prey that are smaller than themselves
-\cite{Brose2006b}. Body-size relationships, then, may play a role in defining
+\cite{Brose2006a}. Body-size relationships, then, may play a role in defining
 Mays's infamous ``devious strategies.'' 
 
 These trends, when identified, conveniently omitted parasites from their
@@ -41,7 +41,7 @@ roles that parasites play in the topology food webs can help to understand
 their larger place in an ecosystem.
 
 Fortunately the last fifteen years have seen the construction of several
-species-rich foodwebs that contain well-resolved communities of parasites.
+species-rich food webs that contain well-resolved communities of parasites.
 These food webs have been the subject of numerous studies exploring, for
 example, the effect of parasites on the fit of theoretical web models, their
 robustness to species removal, and the connection between biomass production,
@@ -52,13 +52,13 @@ generating a set of rules that identify parasites strictly by their local
 topological properties within a food web.
 
 We also investigate the effect of trophic resolution on the ability of
-community and node properties to distniguish free liver from parasite. It has
+community and node properties to distinguish free liver from parasite. It has
 been shown that a well-resolved food web is robust to modest decreases in
 trophic resolution \cite{Martinez1991}. Untangling the role of variable 
 resolution in food webs remains an important question \cite{Martinez1999}.
 
 \section{Data} 
-Follwing \cite{Dunne2013}, we analyzed 6 food webs containing well-resolved
+Following \cite{Dunne2013}, we analyzed 6 food webs containing well-resolved
 parasite communities and more than 100 functionally distinct ``trophic
 species'' each of which contain all taxa that share the exact same set of
 predators (\ref{tab:foodWebSummary}).
@@ -69,9 +69,9 @@ predators (\ref{tab:foodWebSummary}).
 %detailed descriptions can be found in the literature \cite{Dunne2013}. 
 
 All six food webs represent coastal ecosystems. Three are located on the pacific
-coast of southern California and Mexico \cite{Hechinger2011}; two are located
-on the north sea \cite{Thieltges2005,Zander2011}; one is located in a large
-natural harbor in New Zealand \cite{Mouritsen2006}. 
+coast of southern California and Mexico \cite{Hechinger2011a}; two are located
+on the north sea \cite{Thieltges2011,Zander2011}; one is located in a large
+natural harbor in New Zealand \cite{Mouritsen2011}. 
 
 
  \begin{table}
@@ -80,12 +80,15 @@ natural harbor in New Zealand \cite{Mouritsen2006}.
         \toprule
         Full Name               &Code       &$S$    &$C$    &$S_p$  &$S_f$  &Reference\\
         \midrule 
-        Bahia Falsa San Quintin &BSQ        &185    &0.083  &49     &127&\cite{Hechinger2011}\\
-        Carpinteria Salt Marsh  &CSM        &154    &0.084  &56     &88 &\cite{Hechinger2011}\\
-        Estero de Punta Banda   &EPB        &147    &0.079  &68     &70 &\cite{Hechinger2011}\\
+        Bahia Falsa San Quintin &BSQ        &185    &0.083  &49
+                                &127&\cite{Hechinger2011a}\\
+        Carpinteria Salt Marsh  &CSM        &154    &0.084  &56     &88
+                                &\cite{Hechinger2011a}\\
+        Estero de Punta Banda   &EPB        &147    &0.079  &68     &70
+                                &\cite{Hechinger2011a}\\
         Flensburg Fjord         &FF         &141    &0.090  &41     &94 &\cite{Zander2011}\\
-        Otago Harbor            &OH         &117    &0.077  &17     &96&\cite{Mouritsen2006}\\
-        Sylt Tidal Basin        &STB        &109    &0.071  &29     &74&\cite{Thieltges2005}\\
+        Otago Harbor            &OH         &117    &0.077  &17     &96&\cite{Mouritsen2011}\\
+        Sylt Tidal Basin        &STB        &109    &0.071  &29     &74&\cite{Thieltges2011}\\
         \bottomrule
     \end{tabular}
     \caption{This table shows the size (species richness, $S$) and complexity
@@ -108,7 +111,7 @@ link; all other consumers were classified as free-livers. The empirical data
 also distinguished life stages of many but not all species. We addressed this
 inconsistency by aggregating all the life stages of a species into a single
 node; we then aggregated these species-level nodes with identical consumer and
-resource sets into trophic webs to create webs identical tothsoe in
+resource sets into trophic webs to create webs identical to those in
 \cite{Dunne2013}. 
 
 \begin{table}
@@ -147,7 +150,7 @@ resource sets into trophic webs to create webs identical tothsoe in
         link type from our analysis. Link types marked by * denote concomittant
         links; we omit these from our analysis because they are well predicted
         by a simple structural algorithm as they arise solely from the
-        interactions of two other organisms. See \ref{Hechinger2011a} for complete
+        interactions of two other organisms. See \cite{Hechinger2011a} for complete
         descriptions of all link types.
     \label{tab:foodWebLinks}}
 \end{table}
@@ -160,30 +163,29 @@ topological niche so there was no ambiguity in our final classification of each
 trophic species. We also tracked the body size of each trophic node; the
 resulting body size of an aggregated trophic node is the geometric mean of the
 body sizes of each species comprising the node. Only the webs compiled in
-\ref{Hechinger2011a} had body size data.
+\cite{Hechinger2011a} had body size data.
 
 \subsection{Nodal Properties of Parasites} We calculated local properties of
 nodes in an attempt to find a structural fingerprint of parasitism. The
 properties calculated include traditional local properties of ecological
 interest (vulnerability, generality, and trophic level, represented by $v_i$,
 $g_i$, and $T_i$, respectively) and network theoretic properties not commonly
-found in ecological studies. See table \ref{tab:localProperties} for a summary
-of these network properties.  \fxnote{References for these properties.} 
+found in ecological studies.
 
 \subsubsection{Clustering Coefficients}
 Parasites violate conventional body size relationships where larger predators
 typically consume smaller prey. This may lead to unusual topological
 neighborhoods where parasite consumers and resources interact more or less
 frequently than that which occurs in the neighborhoods of more conventional
-predators and prey. IN order to explore this possibility, we calculated four
-different directed clustering coefficients following \cite{Fagiolo2006}.
+predators and prey. In order to explore this possibility, we calculated four
+different directed clustering coefficients following \cite{Fagiolo2007}.
 The clustering coefficient of a network is generally considered to be the
 probability that two nodes that are linked to a third node are also linked to
 each other. While typically calculated at the whole web level, it can also be
 calculated for an individual node as the probability that two of that node's
 neighbors are themselves linked together. Such coefficients are conceptually
 straightforward int he case of non-directed links; directional links such as
-feeding relationships complicate teh calculation of such coefficients.
+feeding relationships complicate the calculation of such coefficients.
 
 
 In undirected networks, the clustering coefficient of a node is the fraction of
@@ -290,14 +292,14 @@ individual species with just one link are set to zero.
         \bottomrule
     \end{tabular}
     \caption{This table summarizes the four types of clustering coefficients as
-        found in \ref{Fagiolo2006}. We have renamed the clustering coefficients
-        to better reflect the ecological interpretation. All formulae are for
-        node $i$; $A$ is the adjacency matrix without cannibalism, $(M)_{ii}$
-        is the $(i,i)$-th entry of a matrix $M$, $g_i$ is the (non-normalized)
-        generality of node $i$, and $v_i$ is the (non-normalized) vulnerability
-        of node $i$.  The clustering coefficient is the fraction of times the
-        gray links appear given the existence of the black links in each
-        sub-graph. 
+        found in \cite{Fagiolo2007}. We have renamed the clustering
+        coefficients to better reflect the ecological interpretation. All
+        formulae are for node $i$; $A$ is the adjacency matrix without
+        cannibalism, $(M)_{ii}$ is the $(i,i)$-th entry of a matrix $M$, $g_i$
+        is the (non-normalized) generality of node $i$, and $v_i$ is the
+        (non-normalized) vulnerability of node $i$.  The clustering coefficient
+        is the fraction of times the gray links appear given the existence of
+        the black links in each sub-graph. 
     \label{tab:triangles}}
 \end{table}
 
@@ -366,14 +368,14 @@ If a node $i$ has no resources, we set $v_r(i)=0$.
 \subsubsection{FlowRank} The PageRank measure achieved fame as one of the
 metrics behind the popular Google search engine; webpages have a high PageRank
 if webpages with high PageRank link to them, accounting for both the quantity
-of links and the PageRank of each source node.  We follow \cite{Allesina2009}
+of links and the PageRank of each source node.  We follow \cite{Allesina2009b}
 in a modification of the PageRank algorithm to create an eigenvalue-based
 centrality measure suitable for food webs, which we call here FlowRank. The
 idea behind FlowRank is that nodes should be "important" (i.e. have a high
 FlowRank) if they are resources for important nodes. Note that the FlowRank
 "importance" flows backwards along the food web links, that is, a node's
 importance derives from its consumers (who the node points to), not its resources
-(who points to the node). See \cite{Allesina2009} for a full discussion of the
+(who points to the node). See \cite{Allesina2009b} for a full discussion of the
 measure. In what follows, we denote the FlowRank of a node $i$ by
 $\lambda_i$.
 
@@ -381,7 +383,7 @@ $\lambda_i$.
 on network size and complexity. To alleviate this issue, we normalize all of
 the above metrics by dividing by the mean value among all consumers. This
 scaling was chosen over a $z$-score standardization since many of the variables
-stuied are defined to be nonegative with a special meaning attached to zero,
+studied are defined to be non-negative with a special meaning attached to zero,
 which we wished to preserve. We then compare parasitic averages to carnivore
 averages to account for the absence of parasites of basal species (for example,
 no herbivorous insects were sampled in any of the webs) in all webs
@@ -419,21 +421,22 @@ linkage criteria (i.e. the "mean linkage criterion") quickly resulted in
 disconnected webs. For each food web defined along the clustering sequence, we calculated the
 aforementioned nodal and global properties. 
 
-\subsubsection{Breaking Ties} The sequence of clusters resulting from agglomerative clustering
-algorithms are nondeterministic in the presence of ties in the distance between
-pairs of clusters. At each step in the clustering algorithm, we first
-identified all potential mergers between clusters. We then label the smaller
-cluster the \textit{satellite} and the larger cluster the \textit{sink} for
-each merger; if the two clusters for a given merger were the same size, each
-cluster had equal probability of being assigned as the sink. After identifying
-the satellite and the sink, we model the merger of two clusters as the
-satellite being subsumed into the sink. Given a set of potential mergers, we
-merge the smallest sinks first; ties between smallest sinks were broken by
-choosing the merger with the smaller satellite; ties in both sink and satellite
-size were broken at random. When a satellite merges into a sink, it is
-ineligible for any further mergers. The sinks, however, remain eligible for
-further mergers until they are subsumed into a larger sink. We used the above
-procedure to encourage a more even distribution of nodes among clusters. 
+\subsubsection{Breaking Ties} The sequence of clusters resulting from
+agglomerative clustering algorithms are non-deterministic in the presence of
+ties in the distance between pairs of clusters. At each step in the clustering
+algorithm, we first identified all potential mergers between clusters. We then
+label the smaller cluster the \textit{satellite} and the larger cluster the
+\textit{sink} for each merger; if the two clusters for a given merger were the
+same size, each cluster had equal probability of being assigned as the sink.
+After identifying the satellite and the sink, we model the merger of two
+clusters as the satellite being subsumed into the sink. Given a set of
+potential mergers, we merge the smallest sinks first; ties between smallest
+sinks were broken by choosing the merger with the smaller satellite; ties in
+both sink and satellite size were broken at random. When a satellite merges
+into a sink, it is ineligible for any further mergers. The sinks, however,
+remain eligible for further mergers until they are subsumed into a larger sink.
+We used the above procedure to encourage a more even distribution of nodes
+among clusters. 
 
 To account for stochasticity in the hierarchical clustering model, we ran 100
 replicates of the clustering procedure for each web and averaged the results;
@@ -452,7 +455,7 @@ estimate the misclassification rate of all species and of parasites
 specifically. We also analyzed the relative importance of each metric on all
 classification trees. All trees were constructed using \verb|fitctree| in
 MATLAB R2016b with a maximum of 4 splits. We chose a maximum of 4 splits to
-avoid overfitting and to ensure that the trees are easily comprehended.
+avoid over-fitting and to ensure that the trees are easily comprehended.
 Increasing the number of splits did not result in significant increases in the
 error rates (results not shown).
 
@@ -460,16 +463,16 @@ error rates (results not shown).
 \section{Results} 
 
 \subsection{Body Sizes Relationships} We plotted the log-normalized body size
-of consumers against the $\log_{10}$-normalized body size of resources for the
-completely unaggregated webs (figure \ref{Fig:bodySizeFig-a}) and trophic webs
-(figure \ref{fig:bodySizeFig-b}). Links
-were colored according to the metabolic type of the consumer; regression lines
-were calculated for each metabolic type and $R^2$ values were calculated. The
-fitted slopes were fairly robust to trophic aggregation except for parasites;
-the slope for parasites decreased by a factor of ten after trophic aggregation,
-from $-0.40$ $-0.04$. The $R^2$ values also saw decreases; they decreased by
-factors of two for Invertebrates and Ectotherm Invertebrates, a marginal
-decrease for Endotherms, and to essentially zero for the parasites.
+of consumers against the $\log_{10}$-normalized body size of resources raw food
+webs including life stages (figure \ref{fig:bodySizeFig-a}) and trophic webs
+(figure \ref{fig:bodySizeFig-b}). Links were colored according to the metabolic
+type of the consumer; regression lines were calculated for each metabolic type
+and $R^2$ values were calculated. The fitted slopes were fairly robust to
+trophic aggregation except for those of parasites; the slope for parasites
+decreased by a factor of ten after trophic aggregation, from $-0.40$ to
+$-0.04$. The $R^2$ values also saw decreases; they decreased by factors of two
+for invertebrates and ectotherm invertebrates, a marginal decrease for
+endotherms, and to essentially zero for the parasites.
 
 \begin{figure}
     \centering
@@ -486,18 +489,18 @@ decrease for Endotherms, and to essentially zero for the parasites.
             are colored according to the metabolic type of the consumer.
             Least-squares regression lines were calculated for each metabolic
             type and $R^2$ values were reported. The dashed line represents
-            equality between consumer and resource body size ratio.
+            equality between consumer and resource body size.
         \label{fig:bodySizeFig}} 
 \end{figure}
 
-\subsection{Properties of Initial Trophic Webs} The parasite average plotted against the
-carnivore average for each property for each empirical trophic web is given in
-figure \ref{fig:initialNodalProperties}. Only one of the nine nodal properties
-resulted in statistically significant differences between the average value for
-parasites and free-livers when controlling the family-wise error rate with the
-Bonferroni-Holm procedure at the 0.05 significance level.  See figure
-\ref{fig:initialNodalProperties} for a summary of the test results on the
-initial trophic webs.
+\subsection{Properties of Initial Trophic Webs} The parasite average plotted
+against the carnivore average for each property for each empirical trophic web
+is given in figure \ref{fig:initialNodalProperties}. Only one of the nine nodal
+properties resulted in statistically significant differences between the
+average value for parasites and free-livers when controlling the family-wise
+error rate with the Bonferroni-Holm procedure at the 0.05 significance level.
+See figure \ref{fig:initialNodalProperties} for a summary of the test results
+on the initial trophic webs.
 
 Despite the failure to reject 11 of the 12 null hypotheses, there was some
 tentative evidence of systematic differences in the means of parasites and
@@ -512,7 +515,7 @@ there were two properties with low $P$-values for which we were unable to
 reject the null hypothesis; trophic level (figure
 \ref{fig:initialNodalProperties-c}) and the community level fraction of realized
 links between consumers (figure \ref{fig:initialNodalProperties-l}) both had
-$P$-valus less than 0.01 but were not low enough to warrant rejection by the
+$P$-values less than 0.01 but were not low enough to warrant rejection by the
 Bonferroni-Holm procedure.  
 
 A further four properties had $P$-values below 0.05 but were considerably
@@ -530,7 +533,7 @@ parasitic average remained relatively static. The community fraction of
 realized links from resources to consumers (figure
 \ref{fig:initialNodalProperties-j} also showed a potential relationship with
 web size; as web size decreases we see a decrease in the fraction for the
-parasite community while the fraction ofor the carnivore community remained
+parasite community while the fraction for the carnivore community remained
 relatively static.  Finally, the fraction of links between consumers (figure
 \ref{fig:initialNodalProperties-i}) also showed a decrease for parasites as web
 size decreased and little change in the carnivore average.  However, given the
@@ -544,7 +547,7 @@ decreased and the carnivore FlowRank increased. Vulnerability (figure
 \ref{fig:initialNodalProperties-a}) also showed a potential relationship of
 increasing carnivore average with increasing complexity while the parasite
 average remained the same. Again, given the fairly weak nature of these
-relationships and the fact that they occured in only a sixth of the properties
+relationships and the fact that they occurred in only a sixth of the properties
 meant that we saw little need to control for web complexity either.
 
 \begin{sidewaysfigure}       
@@ -607,7 +610,7 @@ carnivores are a subset of the free livers.
 
     \caption{This figure shows the minimum distance between different type of
         species in the agglomeration sequence for each web. Noe that these
-        are the mean jaccard distancse before links between species are formed
+        are the mean Jaccard distances before links between species are formed
         in the food webs.
     \label{fig:initialNodalProperties}}
 
@@ -694,7 +697,7 @@ each minimum cluster distance.
         red line; others were marked with a gray line. Theses tests were
         corrected to control the family-wise error rate at each agllomeration
         level using the Bonferroni-Holm procedure. Agglomeration level was
-        measured by the minimum distance between any two nodes in a clsutered
+        measured by the minimum distance between any two nodes in a clustered
         web.  Non-uniformity in this measure within and across webs meant that
         ensuring all 6 webs were averaged at required us to bin distances and
         average multiple agglomeration levels for each web before averaging
@@ -717,11 +720,11 @@ increase in error from the full model when it was used in isolation and
 resulted in fewer parasites misclassified than the full model. The removal of
 any other predictor had little effect on the misclassification rates.
 
-The mean generality of consumers was the next most effective variable when used in
-isolation, as measured by the overall misclassification rate; however this
+The mean generality of consumers was the next most effective variable when used
+in isolation, as measured by the overall misclassification rate; however this
 variable resulted in a much higher misclassification rate of parasites. The
-rest of the variables had higher overal misclassification rates and all but one
-had higher misclassification rates for parasites. The mean fraction of
+rest of the variables had higher overall misclassification rates and all but
+one had higher misclassification rates for parasites. The mean fraction of
 completed three cycles resulted in fewer misclassified parasites than the full
 model. Two of the variables, generality and mean vulnerability of prey, barely
 beat the random classifier.
@@ -741,7 +744,7 @@ beat the random classifier.
             \ref{fig:initialClassResults-a} and \ref{fig:initialClassResults-c}
             show the performance of classifiers with one of the variables
             removed. Figures \ref{fig:initialClassResults-b} and
-            \ref{fig:initialClassResults-d} show the resutls with one of the
+            \ref{fig:initialClassResults-d} show the results with one of the
             variables isolated. The $y$-axis in figures
             \ref{fig:initialClassResults-a} and \ref{fig:initialClassResults-b}
             represent the misclassification rate as a fraction of the error of
@@ -763,12 +766,12 @@ agglomeration level with different splits between training and test data. At
 each training level we recorded the 4 most frequently used predictors. We chose
 to use only four because there are far fewer parasites and carnivores at the
 higher levels of agglomeration; we then computed a further 100 webs at each
-agglomeration level using only the identified most commonly ocuring predictors.
-The results for those 8,100 classification trees are given in figure
-\ref{fig:seqClassResults}. The overall error was relatively stable, remaining
-between 0.27 and 0.37 across all agglomeration levels. Within this range, there
-was considerable variability with no clear trend. The parasite
-misclassification rate was also quite low, remaning between 0.06 and 0.13 for
+agglomeration level using only the identified most commonly occurring
+predictors.  The results for those 8,100 classification trees are given in
+figure \ref{fig:seqClassResults}. The overall error was relatively stable,
+remaining between 0.27 and 0.37 across all agglomeration levels. Within this
+range, there was considerable variability with no clear trend. The parasite
+misclassification rate was also quite low, remaining between 0.06 and 0.13 for
 the agglomeration levels calculated; this measure also showed a high degree of
 variability.
 
@@ -778,7 +781,7 @@ level was commonly used in all but a few of the classification trees. FlowRank,
 betweenness centrality, and mean generality of consumers were the next most
 commonly used predictors; the rest were either never used or used just a few
 times. Notice that the three most commonly used predictors corresponded to
-varibles that had small $P$-values in figure \ref{fig:initialNodalProperties}.
+variables that had small $P$-values in figure \ref{fig:initialNodalProperties}.
 
 \begin{figure}
     \centering
@@ -800,34 +803,34 @@ varibles that had small $P$-values in figure \ref{fig:initialNodalProperties}.
 \section{Discussion} 
 
 \subsubsection{Trophic Aggregation Complicates Trends in Body Size
-Relationships} We found that trophically aggregatng species and life stages
+Relationships} We found that trophically aggregating species and life stages
 weakened observed trends in consumer-resource body size patterns. This effect
 was most pronounced in parasites, where a significant cluster of links was
 entirely lost. This effect was not confined to parasites as the predictive
-power of the least-square regression line was significantly weakend in 3 of the
-4 metabolic types. 
+power of the least-square regression line was significantly weakened in 3 of
+the 4 metabolic types. 
 
 This decrease in predictive power was likely caused by ambiguities in the
 appropriate body size in aggregated nodes, especially when aggregating distinct
 life stages that may have unique sets of resources, for example combining
 parasitic life stages that are predators in a free-living life stage could
-obscure interestig trends. This result is generally in line with results from
-\ref{Gilljam2011}, who showed that computing body size ratios in interactions
+obscure interesting trends. This result is generally in line with results from
+\cite{Gilljam2012}, which shows that computing body size ratios in interactions
 between individuals resulted in much stronger patterns than when averaging body
 sizes between species. 
 
-\subsubsection{Distinguishing Parasitic and Carnivorous Communities} 
-We found that there were some fairly reliable ways to distinguish carnivore and
-parasite communities. In the initial trophic webs, there were seven metrics with
+\subsubsection{Distinguishing Parasitic and Carnivorous Communities} We found
+that there were some fairly reliable ways to distinguish carnivore and parasite
+communities. In the initial trophic webs, there were seven metrics with
 $P$-values below 0.05. Six of those seven metrics had differences that were
 robust to agglomeration, even up to minimum clustering distances of 0.5.
 
 This result may seem to contradict some previous work (cf \cite{Dunne2013}).
 However, the authors of \cite{Dunne2013} were not investigating parasites as
-their own community, but rather the overall structure of the entire foodweb.
+their own community, but rather the overall structure of the entire food web.
 By taking a narrower focus on free-living carnivores and parasites, we were
 able to uncover some systematic patterns within each community. The analysis by
-Dunne \textit{et al.} showed that the empirical webs deviated from theoretical
+Dunne et al. showed that the empirical webs deviated from theoretical
 models in ways that were consistent with the scale dependence of the models;
 this work attempts to describe some of the patterns that are present in those
 deviations. 
@@ -845,7 +848,7 @@ example, ectoparasites of birds were not sampled in any of the webs and
 ectoparasites of fish were underrepresented in all webs.
 While this would raise the average trophic level of parasites, it would also
 raise the average trophic level of the predators of these new parasites.
-Viruses and bacteria were also either missing or severely underampled in all
+Viruses and bacteria were also either missing or severely undersampled in all
 webs. The effect of resolving these highly aggregated or missing nodes could
 profoundly change the observed topology of a food web. Also, we were forced
 to compare parasites to carnivores because of the absence of parasites of
@@ -903,14 +906,15 @@ also that the jaggedness of the error curves is indeed a feature of the web
 sequences as the magnitude of the jumps is much larger than the standard error
 of the calculated averages (results not shown).
 
-\section{Conclusions} We demonstrated the usefuless of certain measures in
-toplogically distinguishing parasites from free-livers at the species and
+\section{Conclusion} We demonstrated the usefulness of certain measures in
+topologically distinguishing parasites from free-livers at the species and
 community level. The usefulness of these properties was consistent even at
-relatiely high levels of agglomeration. This consistency was facilitated by the
-fact that parasite species are more trophically similar to each other than they
-are to free livers.
+relatively high levels of agglomeration. This consistency was facilitated by
+the fact that parasite species are more trophically similar to each other than
+they are to free livers.
 
-\bibliography{../Bib_green}{}
-\bibliographystyle{apalike}
+\bibliographystyle{acm}
+\bibliography{../Bib_green}
 
+ 
 \end{document}
