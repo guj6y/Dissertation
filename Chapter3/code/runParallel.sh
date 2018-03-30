@@ -36,6 +36,6 @@ module load matlab/r2016b
 
 ### run your executable program with begin and end date and time output
 date
-matlab -nodisplay -nodesktop -nosplash < NicheModelTests.m > ./run.log
+matlab -nodisplay -nodesktop -nosplash -nojvm -r "NicheModelTests(0,\'Max\')"  > ./run.log
 date
 
