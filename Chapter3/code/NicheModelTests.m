@@ -20,8 +20,8 @@ webFunctions = {@nicheModelRandCon;
 
 nModels = numel(webFunctions);
 nWebs = 6;
-nLocalProps = 12;
-nGlobalProps = 18;
+nLocalProps = 22;
+nGlobalProps = 20;
 
 %for linkages = {'Min','Max'}
 
@@ -139,8 +139,8 @@ for ii = 1:nModels
        
        end
        globalProps{ii,jj} = tempGlobal;
-       freeProps{ii,jj} = tempGlobal;
-       paraProps{ii,jj} = tempLocal;
+       freeProps{ii,jj} = tempFree;
+       paraProps{ii,jj} = tempPara;
        warning('off','all');
    
    end

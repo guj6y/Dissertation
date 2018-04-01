@@ -1,7 +1,7 @@
 #!/bin/bash
 ### script to run an mpi job using 12-core or less (using only one 12-core node)
 ### Set the job name
-#PBS -N testingNicheModelsMax1
+#PBS -N testingNicheModelsMin5
 
 ### Specify the PI group for this job
 ### List of PI groups available to each user can be found with "va" command
@@ -36,6 +36,6 @@ module load matlab/r2016b
 
 ### run your executable program with begin and end date and time output
 date
-matlab -nodisplay -nodesktop -nosplash -r "NicheModelTests(1,'Max')"  > ./run.log
+matlab -nodisplay -nodesktop -nosplash -r "NicheModelTests(5,'Min')"  > ./run.log
 date
 

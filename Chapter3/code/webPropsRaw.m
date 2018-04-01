@@ -98,8 +98,8 @@ topsPara = mean(tops(para));
 
 bas = mean(basal);
 int = 1-top-bas;
-intFree = 1-topFree - mean(basal(free));
-intPara = 1-topPara; 
+intFree = 1-topsFree - mean(basal(free));
+intPara = 1-topsPara; 
 
 herbs = false(S,1);
 herbs(con(basal(res))) = true;
@@ -129,7 +129,7 @@ rgvFree = corr(gen(free),vul(free));
 
 genSdPara = std(gen(para));
 vulSdPara = std(vul(para))
-rgvFree = corr(gen(para),vul(para));
+rgvPara = corr(gen(para),vul(para));
 
 
 TL = mean(patl);
@@ -153,8 +153,8 @@ loop = loop/S;
 loopFree = loopFree/sum(free);
 loopPara = loopPara/sum(para);
 
-simMx = calculateSimilarity(res,con))
-maxSim = mean(max(simMx);
+simMx = calculateSimilarity(res,con);
+maxSim = mean(max(simMx));
 maxSimFree = mean(max(simMx(free,free)));
 maxSimPara = mean(max(simMx(para,para)));
 
@@ -213,7 +213,7 @@ freeProps =  [   vulFree...                 1
                 ,vulSdFree...               18
                 ,rgvFree...                 19
                 ,loopFree...                20
-                ,maxSimPara...              21
+                ,maxSimFree...              21
                 ,pathFree...                22
 
             ];
@@ -235,7 +235,7 @@ paraProps = [    vulPara...                 1
                 ,omnPara...                 15
                 ,fCarnPara...               16
                 ,genSdPara...               17
-                ,vulSDPara...               18
+                ,vulSdPara...               18
                 ,rgvPara...                 19
                 ,loopPara...                20
                 ,maxSimPara...              21
