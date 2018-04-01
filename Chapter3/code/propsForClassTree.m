@@ -45,7 +45,7 @@ patl = (speye(S)-paTL_mx')\ones(S,1);
 ecoBtwns = ecoBtwn(res,con);
 
 %Ecological Pagerank
-pr = log(pageRank(res,con));
+pr = (pageRank(res,con));
 
 X=  [vul...                 1
     ,gen...                 2

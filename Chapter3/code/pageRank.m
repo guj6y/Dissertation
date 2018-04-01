@@ -46,9 +46,5 @@ S = A./sum(A);
 %catch
 %    pr = nan(n,1);
 %end
-    
-
-
-
 
 end
