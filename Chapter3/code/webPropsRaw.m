@@ -70,6 +70,7 @@ prPara = mean(pr(para));
 prDiff = prFree-prPara;
 
 A = A*1;
+A(eye(S)>0) = 0;
 A2 = full(A^2);
 d2 = diag(A2);
 

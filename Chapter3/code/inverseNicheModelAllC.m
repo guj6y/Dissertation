@@ -14,7 +14,7 @@ L = Lff + Lpp + Lpf + Lfp;
 SList = 1:S;
 tries=10000;                                                               
 %error on the connectances
-error_n=0.05;
+error_n=0.03;
 
 %validation of the plain niche web:
 ok_n=0; 
@@ -43,9 +43,6 @@ while ((tries>0) && ~(ok_n&&web_connected))
     %accordingly. (Number of links is due to being parasite (one per
     %parasite) and stochastic (the rest).
     Cfp = (L - Lff - Lpf - Lpp - Sp)/((Sf-1)*Sp);
-    %These are for forcing a free-liver to be a basal species.
-    Cff = (L - Lfp - Lpf - Lpp)/((Sf-1)*Sf);
-    Cpf = (L - Lff - Lfp - Lpp)/((Sf-1)*Sp);
     
     betaFF = (1-2*Cff)/(2*Cff); 
     betaPP = (1-Enp)/Cpp - 1; 

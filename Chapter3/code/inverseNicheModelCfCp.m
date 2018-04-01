@@ -7,7 +7,7 @@ Sf = S - Sp;
 SList = 1:S;
 tries=10000;                                                               
 %error on the connectances
-error_n=0.05;
+error_n=0.03;
 
 %validation of the plain niche web:
 ok_n=0; 
@@ -36,7 +36,7 @@ while ((tries>0) && ~(ok_n&&web_connected))
     %accordingly. (Number of links is due to being parasite (one per
     %parasite) and stochastic (the rest).
     Cpara = (C*S^2 - Cf*(Sf)*S - Sp)/((S-1)*Sp);
-    Cfree = (C*S^2 - Cpara*(S-1)*Sp - Sp)/((Sf-1)*S);
+    Cfree = Cf;
     betaPara = (1-Enp)/Cpara - 1;
     betaFree = (1-2*Cfree)/(2*Cfree); 
     
