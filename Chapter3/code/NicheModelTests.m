@@ -1,4 +1,4 @@
-function NicheModelTests(minDistance,linkageType)
+function NicheModelTests(distIndex,linkageType)
 %This constructs the six web models I will look at.
 %Correspond to .41, the most agglomeration before we start to really lose
 %accuracy in the classification tree.
@@ -6,8 +6,9 @@ function NicheModelTests(minDistance,linkageType)
 %distancesPlotted = [0 0.05 0.1 0.2 0.4];
 addpath(genpath('~/matlab_bgl'));
 
-
-nWebsPerWeb = 1;
+minDistances = [0,0.05,0.1,0.2,0.4];
+minDistance = minDistances(distIndex);
+nWebsPerWeb = 1000;
 
 webFunctions = {@nicheModelRandCon;
         ...@nicheModelRandCarn;
@@ -149,7 +150,7 @@ for ii = 1:nModels
    end
 end
 fprintf('saving...\n')
-save(sprintf('NicheTestResults%sLinkage-Distance%u',linkageType,count)...
+save(sprintf('NicheTestResults%sLinkage-Distance%u',linkageType,distIndex)...
     ,'carnParaDiffs','globalProps','treeProps');
 fprintf('done.\n')
 clear carnParaDiffs globalProps treeProps
