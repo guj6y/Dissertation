@@ -12,7 +12,7 @@ nWebsPerWeb = 1000;
 
 webFunctions = {@nicheModelRandCon;
         ...@nicheModelRandCarn;
-        @nicheModelRandTree;
+        ...@nicheModelRandTree;
         @invNM1;
         @invNM2;
         @invNM3};
@@ -78,12 +78,9 @@ empCarn = cellfun(@(x) x.carn(:)',reducedProps,'UniformOutput',false)';
 empCarn = [empCarn{:}]';
 empCarn = empCarn(getEm);
 
-useForTree = cellfun(@(x,y) x|y,empPara,empCarn,'UniformOutput',false);
-
 empParaCell = empPara;
 empPara = cell2mat(empParaCell);
 
-useForTree = cell2mat(useForTree);
 empWebs = adjMatrices(getEm);
 
 resCell = cell(6,1);
@@ -98,14 +95,13 @@ propertiesWebsToMatch = propsGlobal(getEm,:);
 %The plan is to calculate 100 webs with each proposed model for each web.
 %We then compare the average performance across all 6 webs.
 
-
-
-carnParaDiffs = cell(nModels,nWebs);
 globalProps = cell(nModels,nWebs);
-treeProps = cell(nModels,nWebs,nWebsPerWeb);
+freeProps = cell(nModels,nWebs);
+paraProps = cell(nModels,nWebs);
 
-[carnParaDiffs{:}] = deal(zeros(nWebsPerWeb,nLocalProps));
 [globalProps{:}] = deal(zeros(nWebsPerWeb,nGlobalProps));
+[freeProps{:}] = deal(zeros(nWebsPerWeb,nLocalProps));
+[paraProps{:}] = deal(zeros(nWebsPerWeb,nLocalProps));
 
 %Get the empirical properties; after the next two lines,
 %empiricalproperties is 2x6; first row is global properties, second row is
@@ -113,47 +109,49 @@ treeProps = cell(nModels,nWebs,nWebsPerWeb);
 empiricalProperties = cellfun(@(x,y,z) webPropsRaw(x,y,z>0),resCell,conCell,empParaCell,'UniformOutput',false);
 empiricalProperties = reshape([empiricalProperties{:}],3,6);
 
-
-X = cell2mat(empiricalProperties(3,:)');
-X(isnan(X)) = 0;
-
-
-bigTree = fitctree(X(useForTree,:),empPara(useForTree)>=0.5 ...
-                ,'MaxNumSplits',4 ...
-                ,'PredictorNames',localVariableNames...
-                    );
-
 nCores = feature('numcores');
 parpool('local',nCores/2);
+
 for ii = 1:nModels
+
    webFunction = webFunctions{ii};
    fprintf('nicheModel no %u\n',ii);
+   
    for jj = 1:nWebs
+      
        %Just takes it all in; wanted this to be as standardized as
        %possible :):
        fprintf('web no %u\n',jj);
        webFunctionIn = propertiesWebsToMatch(ii,:);
        tempGlobal = zeros(nWebsPerWeb,nGlobalProps);
-       tempLocal = zeros(nWebsPerWeb,nLocalProps);
+       tempFree = zeros(nWebsPerWeb,nLocalProps);
+       tempPara = zeros(nWebsPerWeb,nLocalProps);
+      
        parfor kk = 1:nWebsPerWeb
+            
            %WebFunctionOut is a cell array with the appropriate carn-para
            %differences as well as the global properites.
-           webFunctionOut = webFunction(webFunctionIn,globalCol,bigTree);
+           webFunctionOut = webFunction(webFunctionIn,globalCol);
 
            tempGlobal(kk,:) = webFunctionOut{1};
-           tempLocal(kk,:) = webFunctionOut{2};
-           treeProps{ii,jj,kk} = webFunctionOut{3};
+           tempFree(kk,:) = webFunctionOut{2};
+           tempPara(kk,:) = webFunctionOut{3};
+       
        end
-       carnParaDiffs{ii,jj} = tempLocal;
        globalProps{ii,jj} = tempGlobal;
-       warning('off','all')
+       freeProps{ii,jj} = tempGlobal;
+       paraProps{ii,jj} = tempLocal;
+       warning('off','all');
+   
    end
+
 end
-fprintf('saving...\n')
+
+fprintf('saving...\n');
 save(sprintf('NicheTestResults%sLinkage-Distance%u',linkageType,distIndex)...
-    ,'carnParaDiffs','globalProps','treeProps');
-fprintf('done.\n')
+    ,'globalProps','freeProps','paraProps');
+fprintf('done.\n');
 clear carnParaDiffs globalProps treeProps
-save('nicheModelTestsVariables.mat')
+save(sprintf('nicheModelTestsVariables%Linkage-Distance%u.mat',linkageType,distIndex));
 
 end

@@ -1,7 +1,7 @@
 #!/bin/bash
 ### script to run an mpi job using 12-core or less (using only one 12-core node)
 ### Set the job name
-#PBS -N testingNicheModels
+#PBS -N testingNicheModelsMax1
 
 ### Specify the PI group for this job
 ### List of PI groups available to each user can be found with "va" command
@@ -16,10 +16,10 @@
 #PBS -l select=1:ncpus=28:mem=168gb:pcmem=6gb
 
 ### Specify "wallclock time" required for this job, hhh:mm:ss
-#PBS -l walltime=24:00:00
+#PBS -l walltime=1:00:00
 ### Specify total cpu time required for this job, hhh:mm:ss
 ### total cputime = walltime * ncpus
-#PBS -l cput=672:00:00
+#PBS -l cput=672:28:00
 
 #PBS -m bea
 #PBS -M guj6y@email.arizona.edu
@@ -36,6 +36,6 @@ module load matlab/r2016b
 
 ### run your executable program with begin and end date and time output
 date
-matlab -nodisplay -nodesktop -nosplash -nojvm -r "NicheModelTests(0,\'Max\')"  > ./run.log
+matlab -nodisplay -nodesktop -nosplash -r "NicheModelTests(1,'Max')"  > ./run.log
 date
 

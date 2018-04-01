@@ -1,4 +1,5 @@
 function [output] = webPropsRaw(res,con,para)
+
 %non-normalized properties!
 %Now, we calculate properties using the largest connected component.
 S = max([res;con]);
@@ -6,68 +7,46 @@ S = max([res;con]);
 A = sparse(res,con,1,S,S);
 X = propsForClassTree(res,con);
 
-X(:,[1:2 4:12]) = X(:,[1:2 4:12])./mean(X(:,[1:2 4:12]),'omitnan');
-X(:,3) = (X(:,3)-1)/mean(X(:,3)-1);
-X(isnan(X)) = 0;
 vul = X(:,1);
 gen = X(:,2);
 patl = X(:,3);
 pr = X(:,4);
-btwns = X(:,5); 
-ecoBtwns = X(:,6);
-meanVulPrey = X(:,7);
-meanGenPred = X(:,8);
+ecoBtwns = X(:,7);
+meanVulPrey = X(:,5);
+meanGenPred = X(:,6);
 
 basal = gen==0;
-%Identify carnivores Only!
-carn = true(S,1);
-carn(con(basal(res))) = false;
-carn(basal) = false;
-carn(para) = false;
 
-genFree = mean(gen(carn));
+free=~para;
+
+genFree = mean(gen(free));
 genPara = mean(gen(para));
-genDiff = genFree-genPara;
 
-meanGenPredFree = mean(meanGenPred(carn));
+meanGenPredFree = mean(meanGenPred(free));
 meanGenPredPara = mean(meanGenPred(para));
-meanGenPredDiff = meanGenPredFree-meanGenPredPara;
 
 %out degree (vulnerability)
-vulFree = mean(vul(carn));
+vulFree = mean(vul(free));
 vulPara = mean(vul(para));
-vulDiff = vulFree-vulPara;
-
 
 %Mean vulnerability of prey
 %Mean topological fraction of preys' binConsumers
-meanVulPreyFree = mean(meanVulPrey(carn));
+meanVulPreyFree = mean(meanVulPrey(free));
 meanVulPreyPara = mean(meanVulPrey(para));
-meanVulPreyDiff = meanVulPreyFree - meanVulPreyPara;
-
-%PreyAveraged Trophic LEvel
-patlFree = mean(patl(carn));
-patlPara = mean(patl(para));
-patlDiff = patlFree - patlPara;
-
 
 %betweenness takes a ton of time; would be better if I could do this 
 %faster.. oh well.
 
-%Betweenness
-btwnsFree = mean(btwns(carn));
-btwnsPara = mean(btwns(para));
-btwnsDiff = btwnsFree-btwnsPara;
-
 %Ecological Betweenness
-ecoBtwnsFree = mean(ecoBtwns(carn));
+ecoBtwnsFree = mean(ecoBtwns(free));
 ecoBtwnsPara = mean(ecoBtwns(para));
-ecoBtwnsDiff = ecoBtwnsFree-ecoBtwnsPara;
+ecoBtwnsAll = mean(ecoBtwns);
 
 %Ecological Pagerank
-prFree = mean(pr(carn));
-prPara = mean(pr(para));
-prDiff = prFree-prPara;
+prFree = mean(log10(pr(free)));
+prPara = mean(log10(pr(para)));
+
+prSD = std(log10(pr));
 
 A = A*1;
 A(eye(S)>0) = 0;
@@ -79,105 +58,195 @@ ccCycTop = full(diag(A*A2));
 ccCycBot = (gen.*vul-d2);
 ccCyc = sum(ccCycTop)./sum(ccCycBot);
 %ccCyc(isnan(ccCyc)) = 0;
-ccCycCarn = sum(ccCycTop.*carn)/sum(ccCycBot.*carn);
+ccCycFree = sum(ccCycTop.*free)/sum(ccCycBot.*free);
 ccCycPara = sum(ccCycTop.*para)/sum(ccCycBot.*para);
-ccCycDiff = ccCycCarn-ccCycPara;
 
 %middleman
 ccMidTop = full(diag((A*A')*A));
 ccMidBot = (gen.*vul-d2);
 ccMid = sum(ccMidTop)./sum(ccMidBot);
 %ccMid(isnan(ccMid)) = 0;
-ccMidCarn = sum(ccMidTop.*carn)/sum(ccMidBot.*carn);
+ccMidFree = sum(ccMidTop.*free)/sum(ccMidBot.*free);
 ccMidPara = sum(ccMidTop.*para)/sum(ccMidBot.*para);
-ccMidDiff = ccMidCarn-ccMidPara;
 
 %innie
 ccInTop = full(diag(A'*A2));
 ccInBot = (gen.*(gen-1));
 ccIn = sum(ccInTop)./sum(ccInBot);
-
 %ccIn(isnan(ccIn)) = 0;
-ccInCarn = sum(ccInTop.*carn)/sum(ccInBot.*carn);
+ccInFree = sum(ccInTop.*free)/sum(ccInBot.*free);
 ccInPara = sum(ccInTop.*para)/sum(ccInBot.*para);
-ccInDiff = ccInCarn-ccInPara;
 
 %outie
 ccOutTop = full(diag(A2*A'));
 ccOutBot = (vul.*(vul-1));
 ccOut = sum(ccOutTop)./sum(ccOutBot);
-
 %ccOut(isnan(ccOut)) = 0;
-ccOutCarn = sum(ccOutTop.*carn)/sum(ccOutBot.*carn);
+ccOutFree = sum(ccOutTop.*free)/sum(ccOutBot.*free);
 ccOutPara = sum(ccOutTop.*para)/sum(ccOutBot.*para);
-ccOutDiff = ccOutCarn-ccOutPara;
 
-top = sum(vul == 0)/S;
+%Identify carnivores Only!
+carn = true(S,1);
+carn(con(basal(res))) = false;
+carn(basal) = false;
+carn(para) = false;
+
+tops = vul == 0;
+top = mean(tops);
+topsFree = mean(tops(free));
+topsPara = mean(tops(para));
+
 bas = mean(basal);
 int = 1-top-bas;
+intFree = 1-topFree - mean(basal(free));
+intPara = 1-topPara; 
+
 herbs = false(S,1);
 herbs(con(basal(res))) = true;
 herbs(con(~basal(res))) = false;
 herb = mean(herbs);
-omn = mean(~(basal|herbs|carn));
-can = sum(res==con)/S;
-fCarn = mean(carn);
+herbFree = mean(herbs(free));
+herbPara = mean(herbs(para));
 
-linkSd = std(gen+vul);
+omns = ~(basal|herbs|carn);
+omn = mean(omns);
+omnFree = mean(omns(free));
+omnPara = mean(omns(para));
+
+can = sum(res==con)/S;
+
+fCarn = mean(carn);
+fCarnFree = mean(carn(free));
+fCarnPara = mean(carn(para));
+
 genSd = std(gen);
 vulSd = std(vul);
+rgv = corr(gen,vul);
+
+genSdFree = std(gen(free));
+vulSdFree = std(vul(free));
+rgvFree = corr(gen(free),vul(free));
+
+genSdPara = std(gen(para));
+vulSdPara = std(vul(para))
+rgvFree = corr(gen(para),vul(para));
+
+
 TL = mean(patl);
+TLFree = mean(patl(free));
+TLPara = mean(patl(para));
+
 loop = 0;
+loopFree = 0;
+loopPara = 0;
 [~,grps] = graphconncomp(sparse(A),'directed',true);
+
 for ii = 1:S
     if sum(grps==grps(ii))>1
         loop = loop+1;
+        loopFree = loop + free(ii);
+        loopPara = loop + para(ii);
     end
     
 end
 loop = loop/S;
-maxSim = mean(max(calculateSimilarity(res,con)));
+loopFree = loopFree/sum(free);
+loopPara = loopPara/sum(para);
+
+simMx = calculateSimilarity(res,con))
+maxSim = mean(max(simMx);
+maxSimFree = mean(max(simMx(free,free)));
+maxSimPara = mean(max(simMx(para,para)));
+
 A_ = ((A+A'));
 A_(A_>0) = 1.0;
-
 D = all_shortest_paths(A_);
-path = mean(D(:));
+D = triu(D,1);
+DFree = D(free,free);
+DPara = D(para,para);
 
-globalProps =      [top...      1
-                   ,int...      2
-                   ,bas...      3
-                   ,herb...     4
-                   ,omn...      5
-                   ,can...      6
-                   ,loop...     7
-                   ,linkSd...   8
-                   ,genSd...    9
-                   ,vulSd...    10
-                   ,TL...       11
-                   ,maxSim...   12
-                   ,path...     13
-                   ,ccCyc...    14
-                   ,ccMid...    15
-                   ,ccIn...     16
-                   ,ccOut...    17
-                   ,fCarn...     18
+path = mean(D(D>0));
+pathFree = mean(DFree(DFree>0));
+pathPara = mean(DPara(DPara>0));
+
+
+
+globalProps =      [top...          1
+                   ,int...          2
+                   ,bas...          3
+                   ,herb...         4
+                   ,omn...          5
+                   ,fCarn...        6
+                   ,can...          7
+                   ,rgv...          8
+                   ,genSd...        9
+                   ,vulSd...        10
+                   ,TL...           11
+                   ,prSD...         12 
+                   ,path...         13
+                   ,loop...         14
+                   ,ecoBtwnsAll...  15
+                   ,ccCyc...        16
+                   ,ccMid...        17
+                   ,ccIn...         18
+                   ,ccOut...        19
+                   ,maxSim...       20
                    ];
                       
-localDiffs = [   vulDiff...                 1
-                ,genDiff...                 2
-                ,patlDiff...                3
-                ,prDiff...                  4
-                ,btwnsDiff...               5
-                ,ecoBtwnsDiff...            6
-                ,meanVulPreyDiff...         7
-                ,meanGenPredDiff...         8
-                ,ccCycDiff...               9
-                ,ccMidDiff...               10
-                ,ccInDiff...                11
-                ,ccOutDiff...               12
-            ];
-globalProps(isnan(globalProps)) = 0;
-localDiffs(isnan(localDiffs)) = 0;
+freeProps =  [   vulFree...                 1
+                ,genFree...                 2
+                ,TLFree...                  3
+                ,prFree...                  4
+                ,ecoBtwnsFree...            5
+                ,meanVulPreyFree...         6
+                ,meanGenPredFree...         7
+                ,ccCycFree...               8
+                ,ccMidFree...               9
+                ,ccInFree...                10
+                ,ccOutFree...               11
+                ,topsFree...                12
+                ,intFree...                 13
+                ,herbFree...                14
+                ,omnFree...                 15
+                ,fCarnFree...               16
+                ,genSdFree...               17
+                ,vulSdFree...               18
+                ,rgvFree...                 19
+                ,loopFree...                20
+                ,maxSimPara...              21
+                ,pathFree...                22
 
-output = {globalProps, localDiffs, X};
+            ];
+
+paraProps = [    vulPara...                 1
+                ,genPara...                 2
+                ,TLPara...                  3
+                ,prPara...                  4
+                ,ecoBtwnsPara...            5
+                ,meanVulPreyPara...         6
+                ,meanGenPredPara...         7
+                ,ccCycPara...               8
+                ,ccMidPara...               9
+                ,ccInPara...                10
+                ,ccOutPara...               11
+                ,topsPara...                12
+                ,intPara...                 13
+                ,herbPara...                14
+                ,omnPara...                 15
+                ,fCarnPara...               16
+                ,genSdPara...               17
+                ,vulSDPara...               18
+                ,rgvPara...                 19
+                ,loopPara...                20
+                ,maxSimPara...              21
+                ,pathPara...                22
+            ];
+
+
+globalProps(isnan(globalProps)) = 0;
+freeProps(isnan(freeProps)) = 0;
+paraProps(isnan(paraProps)) = 0;
+
+output = {globalProps, freeProps, paraProps};
+
 end
