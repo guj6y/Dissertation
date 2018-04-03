@@ -6,7 +6,7 @@
 
 \chapter{Empirical Food Webs and the Parasitic Niche}
 
-\section{Abstract}
+\begin{abstract}
 While previous studies have investigated the occurrence of parasites in food
 webs, none to the author's knowledge were dedicated solely to the
 differentiation of free-living from parasitic taxa; this difference was always
@@ -19,6 +19,7 @@ and out degree of nodes will help to show new patterns and encourage the use of
 more network theoretic measures in other areas of food web research. We also
 investigate the resilience of observed patterns to decreases in trophic
 resolution.
+\end{abstract}
 
 \section{Introduction}
 
@@ -165,7 +166,7 @@ resulting body size of an aggregated trophic node is the geometric mean of the
 body sizes of each species comprising the node. Only the webs compiled in
 \cite{Hechinger2011a} had body size data.
 
-\subsection{Nodal Properties of Parasites} We calculated local properties of
+\subsection{Properties of Parasites} We calculated both common and more novel properties of
 nodes in an attempt to find a structural fingerprint of parasitism. The
 properties calculated include traditional local properties of ecological
 interest (vulnerability, generality, and trophic level, represented by $v_i$,
@@ -877,15 +878,15 @@ four webs in figures \ref{fig:initialNodalProperties-a},
 The persistence of most of the observed relationships with decreasing
 topological resolution suggests that the observed patterns may be robust to the
 inclusion of some of the missing nodes or refinement of some of the heavily
-aggregated nodes.  Furthermore, we can be fairly
-confident that this set of 12 properties is sufficient to differentiate the
-community of carnivores from the community of parasites in these data.
+aggregated nodes. Furthermore, we can be fairly confident that this set of 12
+properties is sufficient to differentiate the community of carnivores from the
+community of parasites in these data.
 
 \subsubsection{Distinguishing Parasites from Carnivores} The classification
 trees on the original trophic webs were able to distinguish between parasite
-and carnivore species with a fair degree of accuracy: 
-the classification trees were able to classify on average about 85\% of the species
-in an out-of-sample set of nodes. 
+and carnivore species with a fair degree of accuracy: the classification trees
+were able to classify on average about 85\% of the species in an out-of-sample
+set of nodes. 
 
 The fraction of realized links between consumer species is clearly the most
 important predictor variable. The importance of $\gamma^{c}$ is not entirely
@@ -899,12 +900,18 @@ error under the removal of individual other variables suggests that the other
 variables do not contribute unique discriminatory power to the classification
 trees.
 
-The agglomerated webs displayed similar classification errors.  This is not
+The agglomerated webs displayed similar classification errors. This is not
 unexpected as the agglomerated webs will tend to be fairly similar to the
-original trophic webs, especially at lower minimum cluster distances.  Note
-also that the jaggedness of the error curves is indeed a feature of the web
-sequences as the magnitude of the jumps is much larger than the standard error
-of the calculated averages (results not shown).
+original trophic webs, especially at lower minimum cluster distances.
+Furthermore, given the high average distance between free-living species and
+parasites, we might expect that they remain distinguishable. Further research
+on Agglomerated webs could help to describe the nature of this clustering, for
+example by considering a clustering algorithm based on only the diet overlap
+between two species.
+
+Note also that the jaggedness of the error curves is indeed a feature of the
+web sequences as the magnitude of the jumps is much larger than the standard
+error of the calculated averages (results not shown). 
 
 \section{Conclusion} We demonstrated the usefulness of certain measures in
 topologically distinguishing parasites from free-livers at the species and
