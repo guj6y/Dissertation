@@ -1,5 +1,4 @@
 function [out] = nicheModelRandCarn(in,varargin)
-    out = cell(2,1);
     globalCol = varargin{1};
     S = in(globalCol('S'));
     C = in(globalCol('C'));

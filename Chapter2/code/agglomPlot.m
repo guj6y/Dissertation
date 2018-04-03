@@ -19,12 +19,12 @@ localNames = {'web'           ...1
                 ,'free'       ...12
                 ,'S'          ...13
                 ,'C'          ...14
-                ,'size'       ...14
-                ,'ccCyc'      ...15
-                ,'ccMid'      ...16
-                ,'ccIn'       ...17
-                ,'ccOut'      ...18
-                ,'counter'    ...19
+                ,'size'       ...15
+                ,'ccCyc'      ...16
+                ,'ccMid'      ...17
+                ,'ccIn'       ...18
+                ,'ccOut'      ...19
+                ,'counter'    ...20
                 };
 
 
@@ -83,7 +83,7 @@ localMeanNames = {
                 ,'ccOutPara'        ...       30
                 ,'counter'                 ...31
             };
-for linkageTypes = {'Max'}
+for linkageTypes = {'Max','Min','Mean'}
     %linkageType = 'Max';
     linkageType = linkageTypes{:};
     if strcmp(linkageType,'Max')

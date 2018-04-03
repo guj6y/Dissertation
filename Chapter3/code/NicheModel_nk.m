@@ -7,7 +7,7 @@ function [res,con,n_new,c_new,r_new]= ...
 
 tries=10000;                                                               
 %error on the connectances
-error_n=0.05;
+error_n=0.03;
 
 %validation of the plain niche web:
 ok_n=false; 
@@ -25,8 +25,7 @@ while ((tries>0) && ~(ok_n&&web_connected))
 
     %parameters for beta distribution:
     alpha = 1;
-    %Slight correction for the one guaranteed basal species.
-    Cf = C*N^2/(N*(N-1));
+    Cf = C;
     
     beta = (1-2*Cf)/(2*Cf); 
     r = betarnd(alpha,beta,N,1); 

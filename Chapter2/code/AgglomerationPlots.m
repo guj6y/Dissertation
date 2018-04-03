@@ -529,7 +529,7 @@ if plotsToPlot(5)
         paraFreeJac = cellfun(@(s,t,u) triu(s(t>=0.5,u>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.para(:),usedProps{ii}.free(:),'UniformOutput',false);
         carnFreeJac = cellfun(@(s,t,u) triu(s(t>=0.5,u>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.carn(:),usedProps{ii}.free(:),'UniformOutput',false);
         freeFreeJac = cellfun(@(s,t) triu(s(t,t),1),usedProps{ii}.jac(:),usedProps{ii}.free(:),'UniformOutput',false);
-        carnCarnJac = cellfun(@(s,t) triu(s(t>=0.5,t>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.carn(:),'UniformOutput',false);
+        carnCarnJac = cellfun(@(s,t) triu(s(t>=0.5,t>=0.5),1),usedProps{ii}.jac(:),usedProps{ii}.carn(:),'UniformOutput',fpalse);
         
             
         y1 = cellfun(@(x) mean(x(x>0)),paraParaJac);

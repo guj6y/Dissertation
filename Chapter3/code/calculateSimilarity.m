@@ -2,7 +2,22 @@ function [simMx] = calculateSimilarity(res,con)
 
 N = max([res;con]);
 
-A = sparse(res,con,1,N,N);
+A = zeros(N,N);
+A(sub2ind([N,N],res, con))=1;
+AT = A';
+
+linksMx = A+AT;
+toti = sum(linksMx);
+simMx = zeros(N,N);
+
+for ii = 1:N-1
+    a1 = sum((repmat(A(:,ii),1,N-ii) & A(:,(ii+1):N)) + (repmat(AT(:,ii),1,N-ii) & AT(:,(ii+1):N)));
+    simMx((ii+1):N,ii) = a1./(toti(ii) + toti((ii+1):N) - a1);    
+end
+
+
+
+
 
 %Maximum Similarity: need to compare all species to each other -gross! >.<
 
@@ -11,10 +26,10 @@ A = sparse(res,con,1,N,N);
 %prey/pred similarity) more or less likely to go extinct?
 
 %NK's attempt to improve max sim with ridiculous 3d arrays:
-coPreyMxs = zeros(N,N,N);
-coPredMxs = zeros(N,N,N);
-anyPreyMxs = zeros(N,N,N);
-anyPredMxs = zeros(N,N,N);
+%coPreyMxs = zeros(N,N,N);
+%%coPredMxs = zeros(N,N,N);
+%anyPreyMxs = zeros(N,N,N);
+%anyPredMxs = zeros(N,N,N);
 
 %might be possible to reduce complexity with clever indexing.  Still, less
 %than a second for up to about 250x250 matrices.  This might also be slower
@@ -39,7 +54,7 @@ for ii = 1:(N-1)
 end
 %}
 
-
+%{
 for ii = 1:N
     
     %co_prey_mxs(ii,jj,kk) = 1 means species kk (3rd dim) and species jj
@@ -93,6 +108,6 @@ simMx = (permute(sum(coPreyMxs),[2,3,1]) +...
     (permute(sum(anyPreyMxs),[2,3,1])) ...
     + permute(sum(anyPredMxs,2),[1,3,2]))...
     -eye(N);
-
+%}
 
 end

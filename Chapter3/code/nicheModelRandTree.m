@@ -12,8 +12,6 @@ function [out] = nicheModelRandTree(in,varargin)
     carn = true(S,1);
     carn(con(basal(res))) = false;
     carn(basal) = false;
-    nCarn = sum(carn);
-    carnIdx = find(carn);
     
     nPara = round(fPar*sum(~basal));
     X = propsForClassTree(res,con);
