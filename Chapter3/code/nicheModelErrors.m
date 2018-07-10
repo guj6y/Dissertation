@@ -10,6 +10,12 @@ fracHitAllWebsEachModelG = zeros(5,4,2);
 fracHitAllWebsEachModelF = zeros(5,4,2);
 fracHitAllWebsEachModelP = zeros(5,4,2);
 
+nPropsG = zeros(5,4,2);
+nPropsF = zeros(5,4,2);
+nPropsP = zeros(5,4,2);
+
+
+
 fracNearMissedAllWebsEachModel = zeros(5,4,2);
 fracMissedAllWebsEachModel = zeros(5,4,2);
 nGlobalProps = 20;
@@ -31,7 +37,7 @@ for linkageTypeID = 1:1
     globalCol = T.globalCol;
     reducedProps = T.reducedProps;
 
-    for distanceID = 1:5
+    for distanceID = 1
         nGlobalProps = 20;
         nCommProps = 22;
         minDistance = distances(distanceID);
@@ -68,12 +74,12 @@ for linkageTypeID = 1:1
                                   ,'$f_{carn}$'...    18
                                };
                            
-            modelNames = {'Random Consumer'...
+            modelNames = {'Null Model'...
                           ...,'Random Carnivore'...
                           ...,'Tree Classified'...
                           ,'Inverse, C'...
                           ,'Inverse, $C_f$, $C_p$'...
-                          ,'Inverse, all $C$''s'};
+                          ,'Inverse Niche Model '};
 
         %load data from NicheModelTests before doing this.
 
@@ -83,7 +89,9 @@ for linkageTypeID = 1:1
         close all
         %globalFig = figure;
         %communityFig = figure;
-        propsFig = figure;
+        propsFig1 = figure('Visible','off');
+        propsFig2 = figure('Visible','off');
+        propsFig3 = figure('Visible','off');
         redundantGlobal = [3,5];
         redundantFree = [13,14];
         redundantPara = [13,14];
@@ -106,7 +114,7 @@ for linkageTypeID = 1:1
         nLinRedundF = zeros(nModels,nWebs);
         nLinRedundP = zeros(nModels,nWebs);
         
-        for ii = 1:4
+        for ii = [1,4]
             
             useForPCp = true(1,nCommProps);
             useForPCp(redundantPara) = false;
@@ -249,8 +257,8 @@ for linkageTypeID = 1:1
         nFreeProps = sum(useForPCf);
         nParaProps = sum(useForPCp);
         %}
-        %{
-        thisWebGlobal = globalProps;
+        %
+        thisWebGlobal = globalProps; 
         thisWebFree = freeProps;
         thisWebPara = paraProps;
         %}
@@ -304,7 +312,7 @@ for linkageTypeID = 1:1
         prctilesPlotG(~(leftSkewG|rightSkewG)) = log10(prctilesGlobal(~(leftSkewG|rightSkewG))) - log10(1-prctilesGlobal(~(leftSkewG|rightSkewG)));
         prctilesPlotF(~(leftSkewF|rightSkewF)) = log10(prctilesFree(~(leftSkewF|rightSkewF))) - log10(1-prctilesFree(~(leftSkewF|rightSkewF)));
         prctilesPlotP(~(leftSkewP|rightSkewP)) = log10(prctilesPara(~(leftSkewP|rightSkewP))) - log10(1-prctilesPara(~(leftSkewP|rightSkewP)));
-        
+       
         prctMax = log10(1000.5/1001) - log10(.5/1001);
         prctMin = log10(.5/1001) - log10(1000.5/1001);
         
@@ -313,83 +321,245 @@ for linkageTypeID = 1:1
         
         prct995 = log10(.995) - log10(.005);
         prct005 = -prct995;
+
+        prct95 = log10(.95) - log10(.05);
+        prct05 = -prct95;
+       
+        prct9875 = log10(.9875) - log10(.0125);
+        prct0125 = -prct9875;
         
-        set(groot,'defaulttextinterpreter','latex')
+
+        nPtsG = numel(prctilesPlotG);
+        nPtsF = numel(prctilesPlotF);
+        nPtsP = numel(prctilesPlotP);
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        prctOverG = (sum(prctilesPlotG(rightSkewG)>prct95) + ...
+                   sum(prctilesPlotG(~(rightSkewG|leftSkewG))>prct975))...
+                    /nPtsG;
+                  
+        prctOverF = (sum(prctilesPlotF(rightSkewF)>prct95) + ...
+                   sum(prctilesPlotF(~(rightSkewF|leftSkewF))>prct975))...
+                    /nPtsF;
+            
+        prctOverP = (sum(prctilesPlotP(rightSkewP)>prct95) + ...
+                   sum(prctilesPlotP(~(rightSkewP|leftSkewP))>prct975))...
+                    /nPtsP;
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        prctUnderG = (sum(prctilesPlotG(leftSkewG)<prct05) + ...
+                    sum(prctilesPlotG(~(rightSkewG|leftSkewG))<prct025))...
+                    /nPtsG;
+                  
+        prctUnderF = (sum(prctilesPlotF(leftSkewF)<prct05) + ...
+                    sum(prctilesPlotF(~(rightSkewF|leftSkewF))<prct025))...
+                    /nPtsF;
+            
+        prctUnderP = (sum(prctilesPlotP(leftSkewP)<prct05) + ...
+                    sum(prctilesPlotP(~(rightSkewP|leftSkewP))<prct025))...
+                    /nPtsP;
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        prctInG = 1 - prctOverG - prctUnderG;
+
+        prctInF = 1 - prctOverF - prctUnderF;
+
+        prctInP = 1 - prctOverP - prctUnderP;
         
-        %{
-        figure(propsFig);
+        set(groot,'defaulttextinterpreter','latex'...
+                 ,'defaulttextfontname','CMU Serif'...
+                 ,'defaultaxesfontname','CMU Serif'...
+            );
+        
+        %
+        if distanceID==1
         xPara = repmat((1:6)',1,nParaProps);
         xFree = repmat((1:6)',1,nFreeProps);
         xGlobal = repmat((1:6)',1,nGlobalProps);
-        
-        ax1 = subplot(3,4,ii);
+         
+        figure(propsFig1);
+        ax1 = subplot(1,2,round(sqrt(ii)));
         hold on
-        a = scatter(xPara(:),prctilesPlotP(:));
+        a = scatter(xGlobal(:),prctilesPlotG(:));
         title(modelNames{ii})
         u1 = refline(0,prct975);    
         l1 = refline(0,prct025);
+        txt1u = text(ax1,8,prct9875,sprintf('%.1f\\%%',prctOverG*100));
+        txt1m = text(ax1,8,0,sprintf('%.1f\\%%',prctInG*100));
+        txt1l = text(ax1,8,prct0125,sprintf('%.1f\\%%',prctUnderG*100));
         hold off
-        ax2 = subplot(3,4,ii+4);
+
+        figure(propsFig2);
+        ax2 = subplot(1,2,round(sqrt(ii)));
         hold on
         b = scatter(xFree(:),prctilesPlotF(:));
+        title(modelNames{ii})
         u2 = refline(0,prct975);
         l2 = refline(0,prct025);
+        txt2u = text(ax2,8,prct9875,sprintf('%.1f\\%%',prctOverF*100));
+        txt2m = text(ax2,8,0,sprintf('%.1f\\%%',prctInF*100));
+        txt2l = text(ax2,8,prct0125,sprintf('%.1f\\%%',prctUnderF*100));
         hold off
-        ax3 = subplot(3,4,ii+8);
-        hold on
-        c = scatter(xGlobal(:),prctilesPlotG(:)');
+
+        figure(propsFig3);
+        ax3 = subplot(1,2,round(sqrt(ii)));
+        hold on 
+        c = scatter(xPara(:),prctilesPlotP(:)');
+        title(modelNames{ii})
         u3 = refline(0,prct975);
         l3 = refline(0,prct025);
+        txt3u = text(ax3,8,prct9875,sprintf('%.1f\\%%',prctOverP*100));
+        txt3m = text(ax3,8,0,sprintf('%.1f\\%%',prctInP*100));
+        txt3l = text(ax3,8,prct0125,sprintf('%.1f\\%%',prctUnderP*100));
         hold off
+
+        arrayfun(@(x) set(x,'HorizontalAlignment','right'...
+                           ,'FontSize',20 ...
+                           ,'FontWeight','bold'...
+                           ,'FontName','CMU Serif Bold')...
+           ,[txt1u,txt1m,txt1l,txt2u,txt2m,txt2l,txt3u,txt3m,txt3l]...
+                );
+        
         if ii == 1
             ax1.YLabel.String = 'Entire Web ME';
             ax2.YLabel.String = 'Free Livers ME';
             ax3.YLabel.String = 'Parasites ME';
         end
+        
         arrayfun(@(x) set(x,'XTick',1:6 ...
                            ,'XTickLabel',webCodes...
-                           ,'XLim',[0,7]...
+                           ,'XLim',[0,8]...
                            ,'YLim',[prctMin,prctMax]...
                            ,'FontName','CMU Serif'...
+                           ,'FontSize',16 ...
                          )...
                  ,[ax1;ax2;ax3]);
 
         arrayfun(@(x) set(x,'MarkerFaceColor',[0 0 0]...
-                           ,'MarkerFaceALpha',0.08 ...
+                           ,'MarkerFaceALpha',0.15 ...
                            ,'MarkerEdgeColor','none'...
                          )...
                 ,[a;b;c]);
                      
         %arrayfun(@(x) set(x,'visible','off'),[b;c]);
-        
-        
+         
+         
         df = ones(64,1);
 
         hold off
         
-        arrayfun(@(x) set(x,'LineStyle','--','Color',[0.7 0.7 0.7]...
+        arrayfun(@(x) set(x,'LineStyle','--','Color',[0.1 0.1 0.1]...
                             ,'XData',[0,7]),[u1;l1;u2;l2;u3;l3]);
-        set(propsFig,'Units','Inches','Position',[0 0 17 10])
-        
+        set(propsFig1,'Units','Inches','Position',[0 0 17 10])
+        set(propsFig2,'Units','Inches','Position',[0 0 17 10])
+        set(propsFig3,'Units','Inches','Position',[0 0 17 10])
+        end   
         
         %}
-                
+         %       
         allProps = prctilesPlotG(:);
-        fracHitAllWebsEachModelG(distanceID,ii,linkageTypeID) = sum((allProps<=prct975)&(allProps>=prct025));
+
+        fracHitAllWebsEachModelG(distanceID,ii,linkageTypeID) = round(prctInG*nPtsG);
+        nPropsG(distanceID,ii,linkageTypeID) = nPtsG; 
         
-        allProps = prctilesPlotF(:);
-        fracHitAllWebsEachModelF(distanceID,ii,linkageTypeID) = sum((allProps<=prct975)&(allProps>=prct025));
+        fracHitAllWebsEachModelF(distanceID,ii,linkageTypeID) = round(prctInF*nPtsF);
+        nPropsF(distanceID,ii,linkageTypeID) = nPtsF; 
         
         allProps = prctilesPlotP(:);
-        fracHitAllWebsEachModelP(distanceID,ii,linkageTypeID) = sum((allProps<=prct975)&(allProps>=prct025));
-        
+        fracHitAllWebsEachModelP(distanceID,ii,linkageTypeID) = round(prctInP*nPtsP);
+
+        nPropsP(distanceID,ii,linkageTypeID) = nPtsP;
+        %}
         end
-        %print('../figures/Properties-Raw.png','-dpng','-r0')
+    if distanceID == 1
+        %print('../figures/Properties-PCA.png','-dpng','-r300')
+        figure(propsFig1)
+        print('../../Defense/figures/INM-Props1.png','-dpng','-r300')
+        figure(propsFig2)
+        print('../../Defense/figures/INM-Props2.png','-dpng','-r300')
+        figure(propsFig3)
+        print('../../Defense/figures/INM-Props3.png','-dpng','-r300')
+    end
+        
     end
 end
+%
+
+LrsG = log10(...
+    binopdf(fracHitAllWebsEachModelG(:,2:end,1),nPropsG(:,2:end,1),.95)./...
+    binopdf(fracHitAllWebsEachModelG(:,1,1),nPropsG(:,1,1),.95));
+
+LrsF = log10(...
+    binopdf(fracHitAllWebsEachModelF(:,2:end,1),nPropsF(:,2:end,1),.95)./...
+    binopdf(fracHitAllWebsEachModelF(:,1,1),nPropsF(:,1,1),.95));
+
+LrsP = log10(...
+    binopdf(fracHitAllWebsEachModelP(:,2:end,1),nPropsP(:,2:end,1),.95)./...
+    binopdf(fracHitAllWebsEachModelP(:,1,1),nPropsP(:,1,1),.95));
+
+modelPerfFig = figure('Visible','off','Units','Inches','Position',[0 0 11 14]);
+
+
+ax1 = subplot(3,2,1);
+p1= plot(distances',fracHitAllWebsEachModelG(:,[2,3,4,1],1)/nWebs);
+legend('INM 1','INM 2','INM 3','NM 0')
+
+ylabel('Avg. Global Props. Per Web')
+xlabel('Min. Clust. Dist.','FontName','CMU Serif')
+
+ax2 = subplot(3,2,2);
+p2 = plot(distances',LrsG);
+
+ylabel('Global Props. LR')
+xlabel('Min. Clust. Dist.','FontName','CMU Serif')
+
+ax3 = subplot(3,2,3);
+p3 = plot(distances',fracHitAllWebsEachModelF(:,[2,3,4,1],1)/nWebs);
+ylabel('Avg. FL Props. Per Web')
+xlabel('Min. Clust. Dist.','FontName','CMU Serif')
+
+ax4 = subplot(3,2,4);
+p4 = plot(distances',LrsF);
+ylabel('FL Props. LR')
+xlabel('Min. Clust. Dist.','FontName','CMU Serif')
+
+ax5 = subplot(3,2,5);
+p5 = plot(distances',fracHitAllWebsEachModelP(:,[2,3,4,1],1)/nWebs);
+ylabel('Avg. Frac. Para. Props. Per Web')
+xlabel('Min. Clust. Dist.','FontName','CMU Serif')
+
+ax6 = subplot(3,2,6);
+p6 = plot(distances',LrsP);
+ylabel('Para. Props. LR')
+xlabel('Min. Clust. Dist.','FontName','CMU Serif')
+
+arrayfun(@(x) set(x.Title,'String',sprintf('Average Number Properties per Web in 95\\%% Bounds'))...
+         ,[ax1,ax3,ax5]);
+
+
+arrayfun(@(x) set(x.Title,'String','Likelihood Ratio of Each model')...
+         ,[ax2,ax4,ax6]);
+
+arrayfun(@(x) set(x.Legend,'Location','best'...
+                          ,'FontName','CMU Serif'...
+                          ,'Interpreter','LaTeX'...
+                 )...
+         ,[ax2,ax4,ax6]);
+
+
+arrayfun(@(x) set(x,'FontName','CMU Serif'...
+               ,'XLim',[distances(1), distances(end)]...
+               ,'FontName','CMU Serif'...
+               ,'XTick',distances...
+               ,'XTickLabels',cellfun(...
+        @(y) sprintf('%.2g',y) ,mat2cell(distances,1,repmat(1,size(distances)))...
+                                      ,'UniformOutput',false)...
+               ,'FontName','CMU Serif'...
+                 )...
+         ,[ax1,ax2,ax3,ax4,ax5,ax6]...
+        );
+print('../figures/Fracs-LRs-PCA.png','-dpng','-r300')
 
 
 
-
+ %}
