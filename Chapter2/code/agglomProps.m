@@ -1,4 +1,4 @@
-function [localProperties,globalProperties,localMeans,res,con] = agglomProps(A,para,nodeSize,minDistance,n)
+function [localProperties,globalProperties,localMeans,res,con] = agglomProps(A,para,nodeSize,minDistance,counter)
 
 %Check for the connected component; don't worry about the web having basal
 %species, etc. since we are not trying to develop a dynamical model for
@@ -269,7 +269,7 @@ localProperties = [
                         ,ccMid...               16
                         ,ccIn...                17
                         ,ccOut...               18
-                        ,repmat(n,S,1)...       19
+                        ,repmat(counter,S,1)... 19
                     ];
                 
 
@@ -294,7 +294,7 @@ globalProperties = [
                   ,fCarn...         17
                   ,Cp...            18
                   ,Sf...            19
-                  ,n...             20
+                  ,counter...             20
                       ];     
 localMeans = [                 
                  vulFree...                 1
@@ -326,6 +326,6 @@ localMeans = [
                 ,ccInPara...                 27
                 ,ccOutCarn...                 28
                 ,ccOutPara...                 29
-                ,n...                         30
+                ,counter...                         30
             ];
 end

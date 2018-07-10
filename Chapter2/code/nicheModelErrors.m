@@ -1,8 +1,49 @@
+%This is the average differences, std differences, etc. of all webs at each
+    %agglomeration level. Also includes the diffs for each web, just in case
+    %we want that, too.
+    %fileName = sprintf('NicheTestResults%sLinkage-Distance%u',linkageType,distID);
+    S = load('nicheModelTestsVariables.mat');
+    T = load('NicheTestResultsMaxLinkage-Distance1.mat');
+    %We want the global properties only: need to get the Ss and Cs.
+
+        localMeansCol = T.localMeansCol;
+    localMeans = T.propsLocalMeans;
+
+    webCodes = {'BSQ','CSM','EPB','FF','OH','STB'};
+     globalVariableNames = {'TOP'...      1
+                              ,'INT'...      2
+                              ,'BAS'...      3
+                              ,'HERB'...     4
+                              ,'OMN'...      5
+                              ,'CANN'...      6
+                              ,'LOOP'...     7
+                              ,'$\sigma_{Link}$'...   8
+                              ,'$\sigma_g$'...    9
+                              ,'$\sigma_v$'...    10
+                              ,'TL'...       11
+                              ,'maxSim'...   12
+                              ,'$\mu_{PATH}$'...     13
+                              ,'$\gamma^{cyc}$'...    14
+                              ,'$\gamma^{mid}$'...    15
+                              ,'$\gamma^{in}$'...     16
+                              ,'$\gamma^{out}$'...    17
+                              ,'$f_{carn}$'...    18
+                           };
+        modelNames = {'Random Consumer'...
+                      ...,'Random Carnivore'...
+                      ,'Tree Classified'...
+                      ,'Inverse C'...
+                      ,'Inverse Generalities'...
+                      ,'Inverse Subwebs'};
+                  
 %load data from NicheModelTests before doing this.
 
 MarkerCell = {'o';'+';'s';'*';'^';'x'};
 ColorCell = {'r';'b';'g';'c';'m';'k'};
 
+carnParaSorted = cellfun(@sort,T.carnParaDiffs,'UniformOutput',false);
+globalPropsSorted = cellfun(@sort,T.globalProps,'UniformOutput',false);
+empiricalProperties = S.empiricalProperties;
 close all
 globalFig = figure;
 communityFig = figure;
@@ -12,17 +53,15 @@ for ii = 1:nModels
     prctsGlobalProp = cellfun(@(x,y) log10((sum(x>=y)+1)/(nWebsPerWeb+2))-log10(1-(sum(x>=y)+1)/(nWebsPerWeb+2)),empiricalProperties(2,:),carnParaSorted(ii,:),'UniformOutput',false);
     
     prctsCarnPara = cell2mat(prctsCarnPara');
+    prctsGlobalProp = cel2mat(prctsGlobalProp');
     
-    cellfun(@(x,y) log10((sum(x<=y)+1)/(nWebPerWeb+1))-log10(1-(sum(x<=y)+1)/(nWebPerWeb+1)),empiricalProperties(2,:),carnParaSorted(ii,:));
-    globalWebZ = cellfun(@(x,y,z) (x - y)./z ,empiricalProperties(1,:),globalPropsMeans(ii,:),globalPropsStds(ii,:),'UniformOutput',false);
-    globalWebZ = cell2mat(globalWebZ');
     
     figure(globalFig);
     ax = subplot(nModels,1,ii);
     ax.XTick = 1:nGlobalProps;
     ax.XTickLabel = globalVariableNames;
     hold on
-    hGlob = plot(globalWebZ');
+    hGlob = plot(prctsGlobalProp);
     hGlobCell = num2cell(hGlob);
     cellfun(@(x,y,z) set(x,'LineStyle','none'...
                           ,'Marker',y...

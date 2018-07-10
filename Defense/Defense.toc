@@ -1,0 +1,4 @@
+\beamer@sectionintoc {2}{Motivation}{3}{0}{1}
+\beamer@sectionintoc {3}{Structural Fingreprint of Parasites}{4}{0}{2}
+\beamer@sectionintoc {4}{Food Web Models}{29}{0}{3}
+\beamer@sectionintoc {5}{ATN Model}{51}{0}{4}
