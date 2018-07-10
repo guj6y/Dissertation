@@ -1,5 +1,5 @@
 clear
-linkageType = 'Min';
+linkageType = 'Max';
 %linkageType = 'Max';
 load('data/Processed/webGeneration.mat')
 T = load(sprintf('AgglomerationProps%sLinkage.mat',linkageType));
@@ -23,8 +23,7 @@ webs = 1:6; %6 empirical webs + averages for nichewebs with same S,C as these we
 nWebs = numel(webs);
 
 
-%globalFig0 = figure();
-%localFig0 = figure();
+%globalFig0 = figure(); %localFig0 = figure();
 xmin = inf;
 ymin = inf;
 xmax = 0;
@@ -76,10 +75,10 @@ fancyLocalNames = {'(a) Vulnerability'...
                   ,'(f) Eco. Betweenness Centrality'...
                   ,'(g) Mean Vul. Resources'...
                   ,'(h) Mean Gen. Consumers'...
-                  ,'(i) Frac. 3-Cycles'...                  cycle
-                  ,'(j) Frac. Resource-Consumer Links'...   mid
-                  ,'(k) Frac. Resource Links'...            in
-                  ,'(l) Frac. Consumer Links'};            %out
+                  ,'(i) Con. - Res. Clustering'...
+                  ,'(j) Res. - Con. Clustering'...   mid
+                  ,'(k) Resource Clustering'...            in
+                  ,'(l) Consumer Clustering'};            %out
 
 selectThisLevelGlobal = arrayfun(@(x) find(propsGlobal(:,globalCol('web'))==x,1),webs);
 Ss = propsGlobal(selectThisLevelGlobal,globalCol('S'));
@@ -89,12 +88,12 @@ alpha = 0.05;
 m = nLocalPropsPlotted;
 alphaSeq = alpha./(m+1-(1:m));
 
-textColRejected = [0.8 0.2 0.2];
-textColFailed = [0.5 0.5 0.5];
+textColRejected = [0.9 0.2 0.2];
+textColFailed = [0.1 0.1 0.3];
 lineColRejected = [1 0.5 0.5];
 lineColFailed = [0.8 0.8 0.8];
 
-plotsToPlot = [false false false false true];
+plotsToPlot = [false false true false false];
 
 
 
@@ -139,16 +138,19 @@ if plotsToPlot(1)
 
         subplot(3,4,jj);
         h = gscatter(xs,ys,gps,markColors,'.',markSizes,'off');
-        xlabel('Carnivore Average')
-        ylabel('Parasite Average')
-        title(fancyLocalNames{jj},'Interpreter','LaTeX')
-        if jj == 8
+        if jj >= 8
             xlabel('Carnivore Average')
+        else
+            xlabel('')
         end
-        if jj == 4
-
-            ylabel('Parasitic Average')
+        if mod(jj,4) == 1
+            ylabel('Parasite Average')
+        else
+            ylabel('')
         end
+        title(fancyLocalNames{jj}...
+            ,'Interpreter','LaTeX'...
+            ,'FontSize',14)
         xl = xlim;
         yl = ylim;
         xMeans(jj) = mean(xs);
@@ -164,7 +166,7 @@ if plotsToPlot(1)
         ub = max(xl(2),yl(2));
         axis([lb ub lb ub]);
         rl = refline(1,0);
-        rl.Color = [.9,.9,.9];
+        rl.Color = textColFailed;
         uistack(h,'top')
     end
     
@@ -183,12 +185,12 @@ if plotsToPlot(1)
             textCol = textColRejected;
             plot(xl,repmat(mean(yMeans(jj)),1,2),'Color',textCol);
             plot(repmat(mean(xMeans(jj)),1,2),yl,'Color',textCol);
-            meanLabel = sprintf('$t=%.3g$\n$P=%.3g<%.3g$',tDiffs(jj),pDiffs(jj),alphaSeq(IdxIdx(jj)));
+            meanLabel = sprintf('$\\mathbf{t=%.3g}$\n$\\mathbf{P=%.3g<%.3g}$',tDiffs(jj),pDiffs(jj),alphaSeq(IdxIdx(jj)));
         else
             textCol = textColFailed;
             plot(xl,repmat(mean(yMeans(jj)),1,2),'Color',textCol);
             plot(repmat(mean(xMeans(jj)),1,2),yl,'Color',textCol);
-            meanLabel = sprintf('$t=%.3g$\n$P=%.3g\\geq%.3g$',tDiffs(jj),pDiffs(jj),alphaSeq(IdxIdx(jj)));
+            meanLabel = sprintf('$\\mathbf{t=%.3g}$\n$\\mathbf{P=%.3g\\geq%.3g}$',tDiffs(jj),pDiffs(jj),alphaSeq(IdxIdx(jj)));
         end
         
         textLocOpts = [xl(1)+diff(xl)*.02,yl(1)+diff(yl)*.02;...LowerLeft
@@ -206,12 +208,13 @@ if plotsToPlot(1)
         thisAlign = alignmentOpts(thisLoc,:);
         text(textLoc(1),textLoc(2),meanLabel...
                         ,'Color',textCol...
-                        ,'FontSize',8 ...
+                        ,'FontSize',14 ...
                         ,thisAlign{:}...
                         ,'Margin',1 ...
                         ,'backgroundColor','white'...
                         ,'FontName',figureFont...
                         ,'Interpreter','LaTeX'...
+                        ,'Fontweight','bold'...
                          );
         hold off
         axis([xl yl]);
@@ -241,7 +244,7 @@ if plotsToPlot(1)
     colormap(summer);
     arrayfun(@(x) set(x,'FontName',figureFont),localFigFirst.Children);
     set(localFigFirst, 'Units', 'Inches', 'Position', [0, 0, 17, 10])
-    print(sprintf('../figures/initialProps%sLinkage.png',linkageType),'-dpng','-r0')
+    print(sprintf('../figures/initialProps%sLinkage.png',linkageType),'-dpng','-r300')
     
 end
 
@@ -361,7 +364,7 @@ if plotsToPlot(3)||plotsToPlot(4)||plotsToPlot(5)
     nEdges = 81;
     nBins = nEdges-1;
     dMin = 0;
-    dMax = 0.4;
+    dMax = 0.8;
     distancesToPlot = linspace(dMin,dMax,nEdges);
 end
 
