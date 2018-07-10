@@ -89,7 +89,6 @@ ccOutPara = sum(ccOutTop.*para)/sum(ccOutBot.*para);
 carn = true(S,1);
 carn(con(basal(res))) = false;
 carn(basal) = false;
-carn(para) = false;
 
 tops = vul == 0;
 top = mean(tops);
