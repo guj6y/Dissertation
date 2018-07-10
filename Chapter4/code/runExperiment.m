@@ -39,7 +39,7 @@ if appending
     %All this could mix up the out.mat arrays, BUT they get processed in that linear order anyway.
     
     newKFrees = 3;
-    newKParas = [-17,-20];
+    newKParas = [-5];
     fParNew = [];
     nFParNew = numel(fParNew);
     nWebNew = 0;
@@ -84,8 +84,8 @@ else %If we're not appending
     nBasal = 6;
     nFree = S-nBasal;
     
-    kFrees = [1 2];    %Models(1): BSR exponents for free livers
-    kParas = [-3 -4 -17 -20];  %Models(2): BSR exponents for free livers
+    kFrees = [1 2 3];    %Models(1): BSR exponents for free livers
+    kParas = [-3 -4 -5];  %Models(2): BSR exponents for free livers
     fracFrees = [false true]; %Models(3): including fraction of free living time (binary)
     fracParas = [false true]; %Models(4): including concomittant links (binary)
 
