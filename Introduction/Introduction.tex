@@ -1,0 +1,224 @@
+\documentclass[../dissertation.tex]{subfiles}
+\begin{document}
+
+\begin{bibunit}
+%This chapter should give some context to a fairly broad audience.
+\chapter{Introduction}
+
+A complete understanding of ecosystems would seem to depend on the number and
+diversity of species and interactions included within that understanding.
+However, given the spectacular diversity at so many scales e.g., from
+physiology to evolution and from bacteria to whales, embarking on a search for
+such completeness could condemn ecologists to a Sisyphean task of untangling
+Darwin's impenetrable ``entangled bank'' of species and their interactions.
+Comprehending this mind boggling complexity of nature has usually
+been pursued with what might be termed a divide-and-conquer approach.
+Individual processes are observed and combined, for example, birth and death
+rates of a species can be combined into simple mathematical models of the
+population (exponential growth or decay, \cite*{Malthus1817}). The way that these birth and death
+rates vary with that species' population can yield a more realistic model
+(logistic model, \cite*{Verhulst1844}) and the way that those rates vary in the presence of other
+species' populations can yield even more realistic models (Lotka-Volterra type
+models, \cite*{Lotka1920,Volterra1928}). Deciding which processes control species and their interactions is a
+challenging task in community ecology.  Once chosen, a first step in developing
+mathematical models for population or biomass of entire ecosystems (i.e. the
+synthesis of inter- and intraspecies processes) includes understanding how
+those interactions are structured.
+
+\section{Empirical Food Webs}
+
+Ecologists face these challenges by specializing into subdisciplines that focus
+on different types of interactions within and among organisms. For example,
+population ecologists often focus on interactions affecting birth and death
+rates while plant ecologists often focus on competition for light, water, and
+other nutrients. Ecologists often focus on how energy (measured by, say, nutrients
+or biomass) flow through an ecosystem \cite*{Elton1927, MacArthur1955}.
+An overall description of this flow for an individual ecosystem is usually
+given by assembling a food web of all observed feeding interactions between
+multiple species in the ecosystem. These empirical food webs form the basis for
+any understanding of how feeding relationships are organized within observed
+ecosystems.
+
+Empirical food webs are assembled through a combination of direct observation,
+inference (links are known to be present between the species in other areas),
+modeling (links exist between similar species), and speculation (a link is
+presumed to exist given certain characteristics of the taxa) (e.g.
+\cite*{Hechinger2011a}). A significant issue, especially present in historical
+food webs, is uneven resolution across trophic levels \cite*{Martinez1993}. Different studies
+significantly undersample or aggregate different classes of species, for
+example plants, decomposers, or parasites.  The emphasis in food webs is often
+on apex predators of economic (e.g. fish exploited by humans in fisheries) or
+emotional (e.g. birds or other top predators) value (cf.
+\cite*{Yodzis1998,Pikitch2004,Koehn2016}). This uneven resolution and
+the disparate foci make generalizations about food web structure somewhat
+tenuous and complicate studies of the energy flow through ecosystems.
+
+More recent studies of food webs are characterized by greater resolution across
+trophic levels and the sampling of traditionally undersampled species. There
+has also been a push for a synthesis of many different types of interactions
+between species. Several studies were published in 2011 that accounted for a
+potential 21 different types of links \cite*{Hechinger2011a, Mouritsen2011,
+Zander2011, Thieltges2011}. Pollination networks and networks of mutualistic
+interactions (e.g., frugivory) have also seen a renewed focus
+\cite*{Olesen2002,Bascompte2003,Olesen2007,Jordano2003}. The extent to
+which these alternative interaction types affect the flow of energy through an
+ecosystem is not well understood \cite*{Lafferty2006}. Apart from the direct
+effects of parasites on their hosts, they have also been demonstrated to
+significantly impact the habitat composition and species diversity through
+indirect effects \cite*{Mouritsen2010, Wood2007, Dunn2012}. However, the primary
+mechanism of energy flow among species is the consumption of biomass which
+makes feeding interactions the backbone of energy flow through ecosystems.
+
+Parasites in particular are hugely diverse and energetically interactive with
+many species but have historically gone unsampled in food webs
+\cite*{Lafferty2008}. This makes it imperative to discover how this rich
+collection of species affects the transfer of energy in food webs. For example,
+parasites often have the greatest effects on the populations of the most highly
+abundant species \cite*{Gartazar2006, Rossi2005, Vicente2004}. Beyond their
+ability to occasionally cause an epidemic and decimate populations, their high
+abundance in natural ecosystems hints at more consistent impacts on the
+transfer of energy between species \cite*{Whitney2008, Lettini2009}.
+Understanding the role of parasites within a backbone of a predator-prey food
+web is crucial to assessing their impact on mathematical models of ecosystems.
+
+\section{Food Web Models}
+
+There are relatively few well-resolved food webs in the literature. What webs
+there are often have issues. Given the limited quantity and quality of
+empirical webs, it is useful to have a good model for how food webs are
+assembled. Such a model should be able to generate ensembles of realistic food
+webs and infer distributions of simple properties such as generality,
+vulnerability, or trophic level \cite*{Williams2000, Williams2008a}.
+Distributions of more complicated properties such as robustness or persistence
+can also be constructed with additional assumptions about biomass dynamics or
+species loss. Food web models can provide us with large collections of highly
+controlled food webs that help us better understand ``true'' food webs in
+nature.
+
+A key finding of early work in food web models is that the links in food webs
+are not randomly distributed among pairs of nodes \cite*{Cohen1990}. Imposing a
+hierarchy of species in which species higher in the hierarchy eat species lower
+in the hierarchy was found to be an important factor in the organization of
+links in food webs \cite*{Cohen1990}. Another important factor is contiguity of
+diets, that is, species tend to eat all species within a range of that
+hierarchy \cite*{Williams2000}. The fact that such simple rules are able to
+produce network structures that are statistically similar to empirical webs
+suggests that an important underlying mechanism of food web formation is being
+captured.
+
+More complicated food web models have been developed that are able to capture
+as many of the observed links as is possible given certain assumptions on the
+food web structure \cite*{Williams2010,Williams2011,Allesina2008}. More
+mechanistic models based on phylogenetics have also been shown to accurately
+capture food web structure \cite*{Cattin2004}. These models have helped
+researchers understand the distribution of links between species in food webs,
+as well as explain the assumed hierarchy in simpler food web models
+\cite*{Williams2011}.
+ 
+Despite these successes, many of these models are tested primarily on webs with
+predator-prey and plant-herbivore interactions. The extent to which these
+models have been able to reproduce other types of interactions has been little
+studied; indeed, important questions remain about whether other interaction
+types deserve special treatment or the magnitude of their impact on energy
+flows through an ecosystem. For example, there has been much research on
+pollination networks but a thorough synthesis of this research with food web
+research has yet to appear. A model of parasite interactions based on the
+existing assumptions of a hierarchy and contiguity of diets has also been
+proposed, but the lack of reliable empirical food webs incorporating well
+resolved parasite communities meant that the assessment of its applicability
+was limited \cite*{Warren2010}. 
+
+\section{Dynamical Models}
+
+Food webs, whether modeled or empirical, are barely sufficient by themselves to
+understand the energy flow through an ecosystem and their static nature means
+they can provide very little information about how the food webs respond to
+changes in environment. Thus, dynamic models of population or biomass are
+important for gaining a thorough knowledge not only of observed ecosystems, but
+for understanding how ecosystems are likely to behave in general. A major
+challenge in developing mathematical models for population or biomass is in
+parameterizing all the interactions that are present in an ecosystem.
+Traditional models based on birth, death, and attack rates are virtually
+impossible to parameterize given the infeasibility of measuring all the
+requisite rates for all species and all interactions between species
+\cite*{Yodzis1992}. If such models are developed, their applicability outside of
+the ecosystem of interest is limited.
+
+One way forward is to use the results of metabolic theory to parameterize a
+mathematical model based on the allometry of metabolic rate. The Allometric
+Trophic Network (ATN) model uses the allometry of metabolic rate and
+assimilation rates to parameterize a model for an arbitrary number of species
+and interactions given only body sizes for each species and a few scaling
+constants \cite*{Williams2007, Yodzis1992}. The ATN model has proven moderately
+successful at predicting the seasonal dynamics of a temperate lake with very
+limited inputs. The addition of system and species-specific modifications
+resulted in the seasonal biomass and production being reproduced with a
+Bray-Curtis similarities of 0.83 and 0.88, respectively \cite*{Boit2012}.
+The ATN model has provided a means of connecting the structure and properties
+of food webs to their dynamical stability and ability to produce coexistence
+between many species.
+
+However, like the structural models, the ATN has been tested primarily on
+predator-prey and herbivorous interactions principally defined by body size
+ratios \cite*{Brose2006b, Otto2007, Jonsson2018}. The extent to which the
+underlying dynamics of the predator-prey and herbivorous interactions are
+modified with the addition of different link types is not well understood (but
+see \cite*{Mougi2012} and \cite*{Kefi2016}). Indeed, it is not clear how such
+disparate links might be modeled in the ATN framework. For example, pollination
+links between plants and their pollinators represent two effects, one feeding
+and the other reproductive, that cannot be captured by a simple consumption
+interaction.
+
+Parasites pose an interesting problem for the ATN model. On the one hand, they
+are simply consumers with small body sizes. On the other hand, they have
+traditionally been successfully modeled in epidemiology as pathogens in terms
+of their impact on a host population. It is not known whether their effect on
+host populations can be well captured by the ATN model using the natural
+metabolic scaling suggested by metabolic theory. The incorporation of these
+species into the dynamical framework of the ATN model would significantly
+extend its predictive power and empirical relevance.
+
+\section{Outline}
+
+We first examine empirical food webs with well-resolved parasite communities
+for evidence of unique structural patterns of parasite nodes and of parasite
+communities. We also test the robustness of any observed patterns against
+decreases in trophic resolution. We then present a series of modifications to a
+structural model of parasites and assess the ability of those models to
+accurately reproduce properties of empirical webs. We do this at various levels
+of trophic resolution. We conclude with a study on the ability of the ATN model
+to produce webs with coexisting free liver and parasite communities. We extend
+the ATN model to better incorporate elements of the unique life strategy of
+parasites.
+
+%
+%Ecologists have long sought the infamous "devious strategies" that foster
+%stability in the complex ecosystems found in nature \cite*{Mays1972}. Mays's
+%analysis was beautiful in its simplicity and devastating in its implications.
+%It represented a first step towards generalizing mathematical of the population %of single species to entire communities of species.
+%
+%A fairly consistent story
+%has emerged that when consumers and resources are arranged into feeding
+%relationships with consumer-resource body size ratios
+%
+%With the benefit of 40 years perspective, we can 
+%Some more words here.
+%
+%The structure of food webs - contrary to the random network of interactions
+%studied by Mays 40 years ago - display prdictable patterns of interactions. It
+%is through the allometric constraints imposed by body sizes that much promising
+%research has alleviated the catastrophic predictions of Mays's pioneering work
+%\cite*{Brose2006,Otto2007,Berlow2009,Allesina2012}. While these results are
+%applicable to many of the interactions found in nature, they certaintly do not
+%cover them all. \cite*{Allesina2012}, for instance, found that while
+%trophic interactions with consumer-resource body size ratios tended to increase
+%web persistence, mutualistic and
+%competitive relationships tended to decrease stability. \cite*{Otto2007} found
+%that a wide range of body size ratios between the top and intermediate species
+%in a tritrophic food chain 
+\clearpage
+\addcontentsline{toc}{section}{References}
+\putbib
+\end{bibunit} 
+
+\end{document}

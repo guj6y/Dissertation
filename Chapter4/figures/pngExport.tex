@@ -1,0 +1,9 @@
+\tikzset{
+    png export/.style={
+        external/system call/.add=
+            {}
+            {; convert -density 300 -transparent white "\image.pdf" "\image.png"; mv \image.png png;},
+        %
+        },
+    }
+

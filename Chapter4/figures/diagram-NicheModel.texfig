@@ -1,0 +1,34 @@
+
+\documentclass{standalone}
+\usepackage{tikz}
+\begin{document}
+\begin{tikzpicture}
+\draw (0,0)--(10,0)
+node[anchor = west] {$n$};
+\draw (0,.2)--(0,-.2)
+node[anchor = north] {$0$};
+\draw (10,.2)--(10,-.2)
+node[anchor = north] {$1$};
+%Predator
+\fill (7,0) circle (.07) 
+node[anchor = north]  {$n_j$};
+%Predator Diet
+\draw (7,0)--(7,.75)--(2,.75)--(2,.5);
+\draw (.3,0) -- (.3,.5) -- (3.7,.5) -- (3.7,0);
+\draw[dashed] (2,.5) -- (2,0) 
+node[anchor = south east] {$c_j$};
+\draw[<->] (.3,-.5) -- (3.7,-.5)
+node[fill=white,pos = 0.5] {$r_j$}; 
+\draw[dashed] (.3,0)--(.3,-.55);
+\draw[dashed] (3.7,0)--(3.7,-.55);
+%Prey
+\fill (3,0) circle (.07) 
+node[anchor = north west]  {$n_i$};
+\draw(4.2,-2) circle (.3)
+node {$i$};
+\draw[->] (4.5,-2) -- (5.5,-2);
+\draw(5.8,-2) circle (.3)
+node {$j$};
+\end{tikzpicture}
+
+\end{document}

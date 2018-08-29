@@ -1,0 +1,25 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\begin{document}
+\begin{tikzpicture}
+\node [inner sep = .05cm] (p1) at (3,1) {};
+\node [inner sep = .108cm] (p2) at (8,2) {};
+\node [inner sep = .5cm] (s1) at (0,-1) {};
+\node [inner sep = 1.08cm] (s2) at (3,-1) {};
+\node [inner sep = 2.313cm] (s3) at (8,-1) {};
+\draw[->,ultra thick] (s1) -> (s2);
+\draw[->,ultra thick] (s2) -> (s3);
+\draw [ultra thick, dashed] (8,2.5) node [anchor = south]  {$M_f = 100,M_p=10^{-2}$}--(8,-4) node [anchor = north] {TL = 3};
+\draw [ultra thick, dashed] (3,2.5) node [anchor = south]  {$M_f = 10,M_p=10^{-3}$}--(3,-4) node [anchor = north] {TL = 2};
+\draw [ultra thick, dashed] (0,2.5) node [anchor = south]  {$M_f = 1$}--(0,-4) node [anchor = north] {TL = 1};
+\draw[->,ultra thick] (s1) -> (p1);
+\draw[->,ultra thick] (s2) -> (p2);
+\draw[->,dashed,thick,red] (p1) -> (p2);
+\draw[->,dashed,thick,green] (p1) -> (s3);
+\shade [ball color=blue] (s1) circle (.5cm);
+\shade [ball color=blue] (s2) circle (1.08cm);
+\shade [ball color=blue] (s3) circle (2.313cm);
+\draw [ball color=red] (p1) circle (.05cm);
+\draw [ball color = red] (p2) circle (.108cm);
+\end{tikzpicture}
+\end{document}

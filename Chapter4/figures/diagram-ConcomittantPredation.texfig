@@ -1,0 +1,12 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\begin{document}
+\begin{tikzpicture}
+\node[draw,circle] at (0,0) (j) {$j$};
+\node[draw,circle] at (1,-2) (h) {$h$};
+\node[draw,circle] at (2,-1) (p) {$p$};
+\draw[->] (h)--(j);
+\draw[->] (h)--(p);
+\draw[->,dashed] (p)--(j);
+\end{tikzpicture}
+\end{document}

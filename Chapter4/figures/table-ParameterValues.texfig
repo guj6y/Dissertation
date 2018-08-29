@@ -1,0 +1,52 @@
+\documentclass{standalone}
+\begin{document}
+\begin{tabular}{|l|c|l|}
+\hline
+\multicolumn{3}{|c|}{Allometric Parameters}\\
+\hline
+Parameter&Description&Value\\
+\hline
+$a_x^{(inv)}$&Scaling constant for metabolic rate of invertebrate consumers & $0.314$\\
+$z$&Consumer-resource body size ratio&variable, $n=4$\\
+\hline
+\hline
+\multicolumn{3}{|c|}{Functional Response Parameters}\\
+\hline
+Parameter&Description&Value\\
+\hline
+$b_0$&Half-saturation density&$0.5$\\
+$h$&Hill coefficient modifier& $0.2$\\
+$\omega_{ij}$&Preference of $i$ for $j$&$1$ or $0$\\
+\hline
+\hline
+\multicolumn{3}{|c|}{ATN Parameters}\\
+\hline
+Parameter&Description&Value\\
+\hline
+$r_i$&Intrinsic growth of producer $i$&$\mathcal{N}(1,0.1)$\\
+$K$&Community carrying capacity of producers &5\\
+$x_i$&Metabolic rate of consumer $i$&$a_x m_i^{-0.25}$\\
+$y_i$&Maximum rate of assimilation relative to metabolic rate for invertebrate consumers & 8\\
+$e_{ij}^{(carn.)}$&Assimilation efficiency of $j$ by $i$ for a consumer $j$ (carnivory) & 0.85\\
+$e_{ij}^{(herb.)}$&Assimilation efficiency of $j$ by $i$ for a producer $j$ (herbivory) & 0.45\\
+\hline
+\hline
+\multicolumn{3}{|c|}{Food Web Parameters}\\
+\hline
+Parameter&Description&Value\\
+\hline
+$s$&Species richness&40\\
+$c$&Connectance & 0.15\\
+\hline
+\hline
+\multicolumn{3}{|c|}{Independent Variables}\\
+\hline
+Parameter & Values or Description & Replicates\\
+$z_{free}$&$z=10,100$&2\\
+$z_{para}$&$z=.001,.0001$&2\\
+$i_p$&concomittant loss (y/n)&2\\
+$\phi$&Differentiate parasitic biomasses inside and outside hosts (y/n)&2\\
+$f_{par}$&Fraction of consumers as parasites (evenly spaced between 0 and .5)&11\\
+\hline
+\end{tabular}
+\end{document}
