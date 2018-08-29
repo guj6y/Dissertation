@@ -1,2 +1,16 @@
 *.mat
 *.m~
+*.pdf
+*.aux
+*.log
+
+*.toc
+*.png
+*.bbl
+*.blg
+*.dvi
+*.fls
+*.out
+*.dfb_latexmk
+*.fdb_latexmk
+*.swp

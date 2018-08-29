@@ -5,7 +5,8 @@
 
 \usepackage{bibentry}
 
-
+\usecolortheme{rose}
+\usetheme{CambridgeUS}
 
 \AtBeginSection[]{
     \begin{frame}
@@ -17,7 +18,9 @@
     \end{frame}
 }
 
-\title{Effect of Parasites on the Structure and Dynamics of Food Webs}
+\title[Parasites in Food Webs]{Effect of Parasites on the Structure and Dynamics of Food Webs}
+\usecolortheme{rose}
+\usetheme{CambridgeUS}
 \author{Nicholas J. Kappler}
 
 \date{\today}
@@ -26,28 +29,92 @@
 \begin{document}
 \frame{\titlepage}
 
+    \tikzset{littleNode/.style={circle,draw=black,inner sep =1pt,fill=white}}
 \section[Outline]{}
 \frame{\tableofcontents}
 
 \section{Motivation}
-%This is probably the hardest part for me. Maybe that's a bad sign.
 
-\section{Structural Fingreprint of Parasites}
+\begin{frame}
+    \frametitle{Prelude: Food Webs} 
+    \begin{minipage}{0.49\textwidth}
+        \begin{tikzpicture}[scale=1.5]
+            \draw[very thin,dashed] (0,0)--(2.75,0) node [fill=white] {$T$=1};
+            \draw[very thin,dashed] (0,1)--(2.75,1) node [fill=white] {$T$=2};
+            \draw[very thin,dashed] (0,2)--(2.75,2) node [fill=white] {$T$=3};
+            \draw[very thin,dashed] (0,3)--(2.75,3) node [fill=white] {$T$=4};
+            \draw (0.25,0) node [littleNode] (a) {1};
+            \draw (1,0) node [littleNode](b) {2};
+            \draw (1.75,0) node [littleNode](c) {3};
+            \draw (0.25,1) node [littleNode](d) {4};
+            \draw (2,1) node [littleNode](e) {5};
+            \draw (1.5,1) node [littleNode](f) {6};
+            \draw (1.5,2) node [littleNode](g) {7};
+            \draw (2,2.5) node [littleNode](h) {8};
+            \draw (1,1.75) node [littleNode](i) {9};
+            \draw (0.75,2.75) node [littleNode](j) {10};
+            \draw (0.75,2.75) node [littleNode](j) {10};
+            \draw (0.25,2.875) node [littleNode](k) {11};
+            \draw (1.5,3) node [littleNode](l) {12};
+            \draw[->,>=stealth] (a) -- (d);
+            \draw[->,>=stealth] (a) -- (i);
+            \draw[->,>=stealth] (b) -- (i);
+            \draw[->,>=stealth] (c) -- (f);
+            \draw[->,>=stealth] (c) -- (e);
+            \draw[->,>=stealth] (d) -- (j);
+            \draw[->,>=stealth] (d) -- (k);
+            \draw[->,>=stealth] (d) -- (l);
+            \draw[->,>=stealth] (f) -- (i);
+            \draw[->,>=stealth] (f) -- (g);
+            \draw[->,>=stealth] (f) -- (h);
+            \draw[->,>=stealth] (g) -- (i);
+            \draw[->,>=stealth] (g) -- (h);
+            \draw[->,>=stealth] (h) -- (j);
+            \draw[->,>=stealth] (h) -- (l);
+            \draw[->,>=stealth] (i) -- (j);
+            \draw[->,>=stealth] (i) -- (l);
+            \draw[->,>=stealth] (j) -- (k);
+            \draw[->,>=stealth] (j) -- (l);
+            \draw[->,thick,white,>=stealth,dashed] (l) to[out=140,in=60] (j);
+        \end{tikzpicture}
+    \end{minipage}
+    \begin{minipage}{0.49\textwidth}
+        \begin{itemize}[<+->]
+            \item Node, Link
+            \item Graph, Network
+            \item Species, Feeding relationships
+            \item Resource, Consumer
+        \end{itemize}
+    \end{minipage}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Motivation: Parasites}
+    \begin{itemize}[<+->]
+        \item Lots of parasites!
+        \item Energetically important
+        \item Controls on other species
+        \item Problematic to current trends
+    \end{itemize}
+\end{frame}
+
+\section{Structural Fingerprint of Parasites}
 
 \begin{frame}
     \frametitle{Goals}
     \begin{itemize}[<+->]
-        \item Look for systematic difference between parasite and free liver
-            communities
-        \item 
+        \item Past work: adding parasites to food webs
+        \item Differences between free liver and parasite communities?
+        \item Can we find a ``structural fingerprint'' of parasite community
+            (nodes)?
     \end{itemize}
-
 \end{frame}
 
 \begin{frame}
     \frametitle{6 Empirical Food Webs}
     \begin{itemize}[<+->]
-        \item Intertidal ecosystems
+        \item Intertidal ecosystems from around the world
         \item Notable for high resolution
             \begin{itemize}
                 \item Between 109 and 185 trophic species 
@@ -131,25 +198,39 @@
             \draw[->,thick,blue,>=stealth] (b) -- (i);
             \draw[->,thick,blue,>=stealth] (f) -- (i);
             \draw[->,thick,blue,>=stealth] (g) -- (i);
+            \draw (1,1.75) node [littleNode,thick,fill=gray] (i) {9};
         };
-    \only<3>{%
-        \draw[->,red,>=stealth] (i) -- (j);
-        \draw[->,red,>=stealth] (i) -- (l);
-        \draw[->,thick,red,>=stealth] (j) -- (l);
-        \draw[->,thick,red,>=stealth,dashed] (l) to[out=140,in=60] (j);
-        \draw (0.75,2.75) node [littleNode,draw=red,thick] {\color{red}10};
-        \draw (1.5,3) node [littleNode,draw = red,thick] {\color{red}12};
-        \draw[->,blue,>=stealth] (a) -- (i);
-        \draw[->,blue,>=stealth] (b) -- (i);
-        \draw[->,blue,>=stealth] (f) -- (i);
-        \draw[->,blue,>=stealth] (g) -- (i);
-        \draw[->,thick,blue,>=stealth] (f) -- (g);
-        \draw (0.25,0) node [littleNode,draw=blue,thick] (a) {\color{blue}1};
-        \draw (1,0)    node [littleNode,draw=blue,thick] (b) {\color{blue}2};
-        \draw (1.5,1)  node [littleNode,draw=blue,thick] (f) {\color{blue}6};
-        \draw (1.5,2)  node [littleNode,draw=blue,thick] (g) {\color{blue}7};
-
-    }
+        \only<3>{%
+            \draw[->,red,>=stealth] (i) -- (j);
+            \draw[->,red,>=stealth] (i) -- (l);
+            \draw[->,thick,red,>=stealth] (j) -- (l);
+            \draw[->,thick,red,>=stealth,dashed] (l) to[out=140,in=60] (j);
+            \draw (0.75,2.75) node [littleNode,draw=red,thick] {\color{red}10};
+            \draw (1.5,3) node [littleNode,draw = red,thick] {\color{red}12};
+            \draw[->,blue,>=stealth] (a) -- (i);
+            \draw[->,blue,>=stealth] (b) -- (i);
+            \draw[->,blue,>=stealth] (f) -- (i);
+            \draw[->,blue,>=stealth] (g) -- (i);
+            \draw[->,thick,blue,>=stealth] (f) -- (g);
+            \draw (0.25,0) node [littleNode,draw=blue,thick] (a) {\color{blue}1};
+            \draw (1,0)    node [littleNode,draw=blue,thick] (b) {\color{blue}2};
+            \draw (1.5,1)  node [littleNode,draw=blue,thick] (f) {\color{blue}6};
+            \draw (1.5,2)  node [littleNode,draw=blue,thick] (g) {\color{blue}7};
+            \draw (1,1.75) node [littleNode,thick,fill=gray] (i) {9};
+        }
+        \only<4>{%
+            \draw[->,thick,red,>=stealth,dashed] (i) to[out=-20,in=105] (f);
+            \draw[->,thick,red,>=stealth,dashed] (h) to[out=-80,in=45] (f);
+            \draw[->,red,>=stealth] (g) -- (h);
+            \draw[->,red,>=stealth] (g) -- (i);
+            \draw[->,blue,thick,>=stealth] (f) -- (h);
+            \draw[->,blue,thick,>=stealth] (f) -- (i);
+            \draw[->,blue,>=stealth] (f) -- (g);
+            \draw (1.5,1)  node [littleNode,draw=blue,thick] (f) {\color{blue}6};
+            \draw (1.5,2)  node [littleNode,thick,fill=gray] (g) {7};
+            \draw (2,2.5) node [littleNode,draw=red,thick] (h) {\color{red}8};
+            \draw (1,1.75) node [littleNode,draw=red,thick] (i) {\color{red}9};
+        }
    \end{tikzpicture}
    \end{minipage}%
    \begin{minipage}{0.5\textwidth}
@@ -172,7 +253,7 @@
                11&Owls\\
                12&Jaegers\\
                \midrule\rowcolor{white}
-               \multicolumn{2}{l}{\parbox{\linewidth}{Source: 
+               \multicolumn{2}{l}{\parbox{0.9\linewidth}{Source: 
 Cohen, J. E. (compiler) 2010  Ecologists' Co-Operative Web Bank. Version 1.1.
 Machine-readable data base of food webs.  New York: The Rockefeller
 University.}}\\
@@ -182,14 +263,20 @@ University.}}\\
        \only<2>{
            Longspurs:
            \color{red}{\[v_9=2\]}
-           \color{blue}{\[g_9=2\]}
+           \color{blue}{\[g_9=4\]}
            \color{black}\[T_9=\frac{1+1+2+3}{4}+1 = 2.75\]
        }
        \only<3>{
            Longspurs:
            \color{red}\[\gamma_9^c=\frac{1}{2}\]
            \color{blue}\[\gamma_9^r=\frac{1}{12}\]
-           \color{black}\[\gamma_9^{rc}=\gamma^{cr}=0\]
+       }
+       \only<4>{
+           Carnivorous Arthropods: 
+           \[\gamma_{7}^{{\color{blue}r\color{red}c}}= 1\]
+           \[\gamma_{7}^{{\color{red}c\color{blue}r}}= 0\]
+           \[\gamma_7^{r} = 0\]
+           \[\gamma_7^{c} = 0\]
        }
    \end{minipage}
 \end{frame}
@@ -249,15 +336,15 @@ University.}}\\
 
 \begin{frame}
     \frametitle{Observed Patterns}
-    \includegraphics[width=\textwidth]{../Chapter2/figures/initialPropsMaxLinkage.png}
+    \includegraphics[width=\textwidth]{figures/initialPropsMaxLinkage.png}
 \end{frame}
 
 \begin{frame}
-    \frametitle{Patterns are there}
+    \frametitle{Differences Observed}
     \begin{itemize}[<+->]
-        \item Network properties of individual nodes could differentiate
-            parasite from free liver on about 85\% of nodes
-        \item Observed patterns were robust to decreases in trophic resolution
+        \item $\gamma^{cr}$ difference is significantly nonzero.
+        \item $\gamma^c$, $T$ are marginal
+        \item More data, please
     \end{itemize}
 \end{frame}
 
@@ -266,14 +353,7 @@ University.}}\\
     \begin{itemize}[<+->]
         \item We are observing patterns in \textit{data} 
         \item Life stages were aggregated first
-        \item Sampling Biases
-            \begin{itemize}
-                \item No parasites of plants
-                \item No ectoparasites of birds, fish
-                \item Poor resolution of microbes and viruses
-                \item Poor resolution of Fungi
-                \item Detritus as basal node
-            \end{itemize}
+        \item Sampling Biases?
     \end{itemize}
 \end{frame}
 
@@ -287,6 +367,21 @@ University.}}\\
         \item Cohen's Cascades (1990)
         \item Niche Model (2000)
         \item Variants 
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Niche Model Assumptions}
+    \begin{itemize}[<+->]
+        \item The abstract space of species niches (the infamous
+            ``$n$-dimensional hyperspace'') can be mapped onto the interval
+            $(0,1)$, hereafter, the ``niche axis.''
+        \item The diet of a species consists of an interval within the niche
+            axis, hereafter, the species's ``feeding range''.
+        \item The width of a  species's feeding range is proportional to the
+            species's value on the niche axis, AND 
+        \item The center of a species's feeding range is at or below the
+            species's value on the niche axis.
     \end{itemize}
 \end{frame}
 
@@ -365,7 +460,7 @@ University.}}\\
 \end{frame}
 
 \begin{frame}
-    \frametitle{How to Assess Fit}
+    \frametitle{Experiments}
     \begin{itemize}[<+->]
         \item Ensemble of food webs from each model
         \item Calculate properties
@@ -416,17 +511,17 @@ University.}}\\
 
 \begin{frame}
     \frametitle{Entire Web Results}
-    \includegraphics[width=\textwidth]{../Chapter3/figures/Properties-Raw.png}
+    \includegraphics[width=\textwidth]{figures/INM-Props1.png}
 \end{frame}
 
 \begin{frame}
     \frametitle{Free Liver Community Results}
-    \includegraphics[width=\textwidth]{../Chapter3/figures/Properties-Raw.png}
+    \includegraphics[width=\textwidth]{figures/INM-Props2.png}
 \end{frame}
 
 \begin{frame}
     \frametitle{Parasite Community Results}
-    \includegraphics[width=\textwidth]{../Chapter3/figures/Properties-Raw.png}
+    \includegraphics[width=\textwidth]{figures/INM-Props3.png}
 \end{frame}
 
 \begin{frame}
@@ -435,7 +530,6 @@ University.}}\\
         \item Inverse niche model does better
         \item Matching subweb connectances is key
         \item Scale dependence
-        \item Correlations in properties
     \end{itemize}
 \end{frame}
 
@@ -447,18 +541,27 @@ University.}}\\
         \item All activity by a species is driven by metabolic rate
         \item Metabolic rate scales allometrically
         \item $x_i = a_{x_i}M_i^{-0.25}$
+        \item Dynamics simulated on Niche models, $S=40$, $C=0.15$
         \item Body size and body size ratios
-        \item $M_i = Z^{T-1}$
+        \item $M_i = Z^{T_i-1}$
     \end{itemize}
 \end{frame}
 
 
 \begin{frame}
     \frametitle{Equations} 
-    \begin{align}
-        \frac{dB_{b}}{dt} &= r_bB_b\left(1-\frac{\sum_{k\in\text{basal}}B_k}{K}\right) - \sum_kx_kB_k\frac{y_{bk}F_{bk}}{e_{bk}}\\ 
-        \frac{dB_{c}}{dt} &= -x_cB_c + x_cB_c\sum_ky_{kc}F_{kc} - \sum_k x_kB_k\frac{y_{ck}F_{ck}}{e_{ck}}
-    \end{align}
+    \begin{align*}
+        \uncover<1->{\overbrace{\frac{dB_{b}}{dt}}^\text{
+            Basal g.r.}} &
+            \uncover<2->{=\overbrace{r_bB_b\left(1-\frac{\sum_{k\in\text{basal}}B_k}{K}\right)}^\text{Logistic
+                Growth}}\uncover<5->{-\overbrace{\sum_kx_kB_k\frac{y_{bk}F_{bk}}{e_{bk}}}^\text{Loss
+            to Consumers}}\\ 
+            \uncover<1->{\underbrace{\frac{dB_{c}}{dt}}_\text{Cons. g.r.}} &
+            \uncover<3->{= \underbrace{-x_cB_c}_\text{metab.}} \uncover<4->{+
+                \underbrace{x_cB_c\sum_ky_{kc}F_{kc}}_\text{Consumption of
+                Res.}} \uncover<5->{- \underbrace{\sum_k
+        x_kB_k\frac{y_{ck}F_{ck}}{e_{ck}}}_\text{Loss to Consumers}}
+    \end{align*}
 \end{frame}
 
 \begin{frame}
@@ -468,6 +571,23 @@ University.}}\\
     \[
         F_{ij} = \frac{\omega_{ij}B_i^{1+q}}{B_0^{1+q} + \sum_k\omega_{kj}B_k^{1+q}}
     \]
+
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            xmin = 0,xmax = 5,
+            ymin =0,ymax = 1,
+            y=3.5cm,samples=100,
+            xtick = {},xticklabels = {},
+            xlabel = {Resource Biomass},
+            ylabel = {Attack Rate},
+            legend pos = south east]
+            \addplot [domain = 0:5,no marks,blue]{x/(0.85+x)};
+            \addplot [domain = 0:5,no marks]{x^1.2/(0.85+x^1.2)};
+            \addplot [domain = 0:5,no marks,red]{x^2/(0.85+x^2)};
+            \legend{$q=0$,$q=0.2$,$q=1$}
+        \end{axis}
+    \end{tikzpicture}
 \end{frame}
 
 \begin{frame}
@@ -479,22 +599,14 @@ University.}}\\
 M_i=Z_f^{T_i-1}
 \]
 \item<3-> $p$ parasite:
-\only<3>{
-Maybe...?
 
+    \centering
 \begin{tikzpicture}
-\node at (0,0) {$M_i = Z_p^{T_i-1}$};
+    \node at (0,0) {$M_p = Z_p^{T_i-1}$};
+    \uncover<4->{\draw [ultra thick] (-1,.5) -- (1,-.5);
+\draw [ultra thick] (-1,-.5) -- (1,.5);}
 \end{tikzpicture}
-}
 
-\only<4>{
-Wrong!
-
-\begin{tikzpicture}
-\node at (0,0) {$M_p = Z_p^{TL-1}$};
-\draw [ultra thick] (-1,.5) -- (1,-.5);
-\draw [ultra thick] (-1,-.5) -- (1,.5);
-\end{tikzpicture}}
 \end{itemize}
 \end{frame}
 
@@ -564,7 +676,7 @@ $Z = 10$ (no parasites):
 \frametitle{Consumer - Resource Body Size Ratio}
 \begin{itemize}[<+->]
 \item If $p$ and $k$: exponents of body size ratios of parasite-host and
-    consumer-resource relationships,
+    consumer-resource body size ratios ($Z_f = 10^f$, $Z_p = 10^p$),
 \item $i$ free liver:
 \[
 M_i = 10^{k(T_i-1)}
@@ -578,60 +690,120 @@ M_i = 10^{p + k(T_i-2)}
 
 \begin{frame}
     \frametitle{Modifications to ATN}
-    \begin{itemize}[<+->]
-        \item Concomittant predation
-        \item Fraction of biomass outside host, $\phi_i$
-        \item \color{red} Concomittant Diagram
-        \item \color{red}Cartoon of models
-    \end{itemize}
+  
+    \begin{minipage}{0.45\textwidth} 
+        \begin{itemize}
+            \item<2-> Concomittant predation
+            \item<3-> Fraction of biomass outside host, $\phi_i$
+        \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.45\textwidth}
+        \centering
+            \begin{tikzpicture}
+                \node[draw,circle] at (0,0) (j) {$j$};
+                \node[draw,circle] at (1,-2) (h) {$h$};
+                \node[draw,circle] at (2,-1) (p) {$p$};
+                \uncover<3->{\node[draw,circle] at (3,0) (k) {$k$};}
+                \draw[->,>=stealth,thick] (h)--(j);
+                \draw[->,>=stealth,thick] (h)--(p);
+                \uncover<3->{\draw[->,>=stealth,thick] (p)-- node [pos =
+                    0,anchor=west,inner sep = 1pt] {\tiny $\phi_i$} (k);}
+                \only<2>{\draw[->,dashed] (p)--(j);}
+                \uncover<3->{\draw[->,dashed] (p) -- node [pos =
+                        0,anchor=east,inner sep = 1pt]
+                        {\tiny $1-\phi_i$}(j) ;}
+        \end{tikzpicture}
+    \end{minipage}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Null Model}
+    \includegraphics[width=\textwidth]{figures/cartoon1.png}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Parasite Model}
+    \includegraphics[width=\textwidth]{figures/cartoon2.png}
 \end{frame}
 
 \begin{frame}
     \frametitle{Parasite Model}
     \begin{align*}
         \frac{dB_{b}}{dt} =
-        r_bB_b\left(1-\frac{\sum_{k\in\text{basal}}B_k}{K}\right) &-
-        \sum_k\phi_kB_kx_k\frac{y_{bk}^{}F_{bk}^{(troph)}}{e_{bk}}\\ & - \sum_k(1-\phi_k)B_kx_k\frac{y_{bk}^{}F^{(para)}_{bk}}{e_{bk}}
+        r_bB_b\left(1-\frac{\sum_{k\in\text{basal}}B_k}{K}\right) &\only<1>{-\sum_kB_kx_k\frac{y_{bk}F_{bk}}{e_{bk}}}
+        \only<2->{-\sum_k\phi_kB_kx_k\frac{y_{bk}^{}F_{bk}^{\text{(troph)}}}{e_{bk}}}\\ 
+        & \only<2->{-
+    \sum_k(1-\phi_k)B_kx_k\frac{y_{bk}^{}F^{\text{(para)}}_{bk}}{e_{bk}}}
     \end{align*}
+  
     \begin{align*}
-        \frac{dB_{c}}{dt} &= -x_cB_c + \phi_cx_cB_c\sum_ky_{kc}^{ }F^{(troph)}_{kc} + (1-\phi_c)x_cB_c\sum_ky_{kc}^{ }F^{(para)}_{kc}\\ 
-        & - \sum_k \phi_kx_kB_k\frac{y_{ck}^{}F^{(troph)}_{ck}}{e_{ck}} -
-        \sum_k (1-\phi_k)x_kB_k\frac{y_{ck}^{}F^{(para)}_{ck}}{e_{ck}} - C_p
+        \frac{dB_{c}}{dt} &= -x_cB_c
+        \only<1>{+ x_cB_c\sum_ky_{kc}^{ }F_{kc}}\only<1>{- \sum_k
+    x_kB_k\frac{y_{ck}^{}F_{ck}}{e_{ck}}}
+        \only<2->{+ \phi_cx_cB_c\sum_ky_{kc}^{ }F^{\text{(troph)}}_{kc} +
+        (1-\phi_c)x_cB_c\sum_ky_{kc}^{ }F^{\text{(para)}}_{kc}}\\ 
+        &    \only<2->{ - \sum_k \phi_kx_kB_k\frac{y_{ck}^{}F^{\text{(troph)}}_{ck}}{e_{ck}} -
+        \sum_k (1-\phi_k)x_kB_k\frac{y_{ck}^{}F^{\text{(para)}}_{ck}}{e_{ck}}}
+       \only<3->{-C_p}
     \end{align*}
 \end{frame}
 
 \begin{frame}
-    \frametitle{New Functional Response}
+    \frametitle{New Functional Response(s)}
+    \only<1>{
     \[
-        F_{ij}^{(troph)} = \frac{\omega_{ij}^{(troph)}(\phi_iB_i)^{1+q}}{B_0^{1+h} + \sum_k\omega^{(troph)}_{kj}(\phi_kB_k)^{1+q}} \label{subeq:fr1troph}
+        F_{ij} = \frac{\omega_{ij}B_i^{1+q}}{B_0^{1+q} + \sum_k\omega_{kj}B_k^{1+q}} \label{subeq:fr1troph}
+    \]
+    }
+    \only<2>{
+    \[
+        F_{ij}^{\text{(troph)}} =
+        \frac{\omega_{ij}^{\text{(troph)}}(\phi_iB_i)^{1+q}}{B_0^{1+q} +
+        \sum_k\omega^{\text{(troph)}}_{kj}(\phi_kB_k)^{1+q}} \label{subeq:fr1troph}
     \]
     \[
-        F_{ij}^{(para)} = \frac{\omega_{ij}^{(para)}(\phi_iB_i)^{1+h}}{B_0^{1+q} + \sum_k\omega^{(para)}_{kj}(\phi_kB_k)^{1+q}} 
-    \]
+        F_{ij}^{\text{(para)}} =
+        \frac{\omega_{ij}^{\text{(para)}}(\phi_iB_i)^{1+q}}{B_0^{1+q} +
+        \sum_k\omega^{\text{(para)}}_{kj}(\phi_kB_k)^{1+q}} 
+    \]}
 \end{frame}
 
 \begin{frame}
     \frametitle{Concomittant Losses}
-    \begin{itemize}[<+->]
-        \item \[C_p = \sum_ha_{ph}L_h  \]
-        \item 
-            \[ a_{ph} =
-            \frac{(1-\phi_p)B_p}{B_h}\frac{y_{hp}^{}F_{hp}^{(para)}}{\sum_{k}y_{kp}^{}F^{(para)}_{kp}}\] 
-        \item \[ 
-            L_h = \sum_kx_kB_k\frac{y^{}_{kh}F^{(troph)}_{kh}}{e^{}_{kh}}\] 
-    \end{itemize}
+    \uncover<1->{    
+    \[C_p = \sum_ha_{ph}L_h  \]}
+    \uncover<2->{ 
+        \[ a_{ph} =
+            \frac{(1-\phi_p)B_p}{B_h}\frac{y_{hp}^{}F_{hp}^{\text{(para)}}}{\sum_{k}y_{kp}^{}F^{\text{(para)}}_{kp}}
+    \]}
+    \uncover<3->{
+        \[ 
+            L_h = \sum_kx_kB_k\frac{y^{}_{kh}F^{\text{(troph)}}_{kh}}{e^{}_{kh}}
+    \] }
 \end{frame}
 
 \begin{frame}
-    \frametitle{Results of Simulations: Null Model}
+    \frametitle{Results of Simulations}
     \centering
-    \includegraphics[width=.7\textwidth]{../Chapter4/figures2/pdf/null-smallFree.pdf}
+    \includegraphics[width=\textwidth]{figures/pres-fig1.pdf}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Results of Simulations}
+    \centering
+    \includegraphics[width=\textwidth]{figures/pres-fig2.pdf}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Results of Simulations}
+    \centering
+    \includegraphics[width=\textwidth]{figures/pres-fig3.pdf}
 \end{frame}
 
 \begin{frame}
     \frametitle{Discussion}
     \begin{itemize}[<+->]
-        \item Parasites are destabilizing
+        \item Parasites are disruptive
         \item Parasite model doesn't help
         \item Larger free livers do worse
         \item Separation of time scales is likely key
@@ -639,8 +811,10 @@ M_i = 10^{p + k(T_i-2)}
     \end{itemize}
 \end{frame}
 
+\section{Conclusion}
+
 \begin{frame}
-    \frametitle{Takeaway}
+    \frametitle{Takeaways}
     \begin{itemize}[<+->]
         \item Data say there are structural patterns of parasite community 
         \item Those patterns are better matched by inverse niche model, but not as
@@ -653,6 +827,7 @@ M_i = 10^{p + k(T_i-2)}
 \begin{frame}
     \frametitle{Next Steps}
     \begin{itemize}[<+->]
+        \item Investigate the individual properties fit by food web models
         \item Try ATN with inverse niche models
         \item Verify proposed mechanism of extinctions in ATN
     \end{itemize}
