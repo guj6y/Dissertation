@@ -4,6 +4,6 @@ function [avg] = wmean(x,w)
 %nans in the thing being averaged.
 x(w==0) = 0;
 w(isnan(x)) = 0;
-avg = sum(x.*w,'omitnan')./sum(w);
+avg = nansum(x.*w)./sum(w);
 
 end

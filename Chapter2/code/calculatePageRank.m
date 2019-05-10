@@ -24,7 +24,7 @@ conNew = [repmat(n+1,n,1);basalIds'];
 res_ = [res;resNew];
 con_ = [con;conNew];
 
-A = sparse(res_,con_,1,n+1,n+1);
+A = full(sparse(res_,con_,1,n+1,n+1));
 S = A./sum(A);
 
 [pr,~] = eigs(S,1);

@@ -5,27 +5,32 @@ function [localProperties,globalProperties,localMeans,res,con] = agglomProps(A,p
 %these; we would deal with that in the modeling phase anyway. We do want to
 %get rid of disconnected elements, though. This should (hopefully) have the
 %added benefit that we don't get as many warnings when calculating the
-%trophic leve.
-S0 = length(A);
+%trophic level.
+S0 = size(A,1);
+if minDistance > 0
+  [n,grps] = graphconncomp(sparse(A),'weak',true,'directed',true);
 
-[n,grps] = graphconncomp(sparse(A),'weak',true,'directed',true);
+  compSizes = zeros(S0,1);
+  nLinks = zeros(S0,1);
+  for ii = 1:n
+      thisGrp = grps==ii;
+      sizeii = sum(thisGrp);
+      nLinks(ii) = sum(sum(A(thisGrp,thisGrp)));
+      compSizes(ii) = sizeii;
+  end
 
-compSizes = zeros(S0,1);
-nLinks = zeros(S0,1);
-for ii = 1:n
-    thisGrp = grps==ii;
-    sizeii = sum(thisGrp);
-    nLinks(ii) = sum(sum(A(thisGrp,thisGrp)));
-    compSizes(ii) = sizeii;
-end
+  sortedComps = sortrows([(1:S0)', compSizes, nLinks, rand(S0,1)],[-2 -3 4]);
+  numLargest = sum(sortedComps(:,2) == sortedComps(1,2));
 
-sortedComps = sortrows([(1:S0)', compSizes, nLinks, rand(S0,1)],[-2 -3 4]);
-numLargest = sum(sortedComps(:,2) == sortedComps(1,2));
-
-winners = grps==sortedComps(1);
-%I like winners. Winners get to stay.
-
-A = A(winners,winners);
+  winners = grps==sortedComps(1);
+  %I like winners. Winners get to stay.
+  A = A(winners,winners);
+  para = para(winners);
+  nodeSize = nodeSize(winners);
+else
+  n = 1;
+  numLargest = size(A,1);
+endif
 [res,con] = find(A);
 
 if isempty(res) == 1
@@ -36,11 +41,11 @@ if isempty(res) == 1
     con = 0;
     return
 end
-para = para(winners);
+
 %carn shouldn't be carried around like this; it is a STRUCTURAL property!
 %(though it's weird maybe that parasite aren't staying carnivores..?)
 %carn = carn(winners);
-nodeSize = nodeSize(winners);
+
 
 
 
@@ -92,7 +97,7 @@ for ii = 1:S
         meanGenPred(ii) = 0;
     end
 end
-meanGenPred = (meanGenPred)/mean(meanGenPred,'omitnan');
+meanGenPred = (meanGenPred)/nanmean(meanGenPred);
 meanGenPredFree = wmean(meanGenPred,carn);
 meanGenPredPara = wmean(meanGenPred,para);
 
@@ -115,7 +120,7 @@ for ii = 1:S
     end
 end
 
-meanVulPrey = (meanVulPrey-mean(meanVulPrey,'omitnan'))/std(meanVulPrey,'omitnan');
+meanVulPrey = (meanVulPrey-nanmean(meanVulPrey))/nanstd(meanVulPrey);
 meanVulPreyFree = wmean(meanVulPrey,carn);
 meanVulPreyPara = wmean(meanVulPrey,para);
 
@@ -136,19 +141,19 @@ patlPara = wmean(patl,para);
 
 %Betweenness
 btwns = btwn(res,con);
-btwns = (btwns)/mean(btwns,'omitnan');
+btwns = (btwns)/nanmean(btwns);
 btwnsFree = wmean(btwns,carn);
 btwnsPara = wmean(btwns,para);
 
 %Ecological Betweenness
 ecoBtwns = ecoBtwn(res,con);
-ecoBtwns = (ecoBtwns)/mean(ecoBtwns,'omitnan');
+ecoBtwns = (ecoBtwns)/nanmean(ecoBtwns);
 ecoBtwnsFree = wmean(ecoBtwns,carn);
 ecoBtwnsPara = wmean(ecoBtwns,para);
 
 %Ecological Pagerank
 pr = log(pageRank(res,con));
-pr = (pr)/mean(pr,'omitnan');
+pr = (pr)/nanmean(pr);
 prFree = wmean(pr,carn);
 prPara = wmean(pr,para);
 
@@ -162,14 +167,14 @@ Asym = A+A';
 cc0 = full(diag((Asym)^3)./(2*(nNayb).*(nNayb-1)-2*d2));
 
 %cc0(isnan(cc0))= 0;
-cc0Free = wmean(cc0,carn)/mean(cc0(binCons),'omitnan');
-cc0Para = wmean(cc0,para)/mean(cc0(binCons),'omitnan');
+cc0Free = wmean(cc0,carn)/nanmean(cc0(binCons));
+cc0Para = wmean(cc0,para)/nanmean(cc0(binCons));
 
 %Cyclic; 
 ccCycTop = full(diag(A*A2));
 ccCycBot = (gen0.*vul0-d2);
 ccCyc = ccCycTop./ccCycBot;
-ccCyc = ccCyc/mean(ccCyc,'omitnan');
+ccCyc = ccCyc/nanmean(ccCyc);
 %ccCyc(isnan(ccCyc)) = 0;
 ccCycCarn = sum(ccCycTop.*carn)/sum(ccCycBot.*carn);
 ccCycPara = sum(ccCycTop.*para)/sum(ccCycBot.*para);
@@ -179,7 +184,7 @@ ccCycPara = sum(ccCycTop.*para)/sum(ccCycBot.*para);
 ccMidTop = full(diag((A*A')*A));
 ccMidBot = (gen0.*vul0-d2);
 ccMid = ccMidTop./ccMidBot;
-ccMid = ccMid/mean(ccMid,'omitnan');
+ccMid = ccMid/nanmean(ccMid);
 %ccMid(isnan(ccMid)) = 0;
 ccMidCarn = sum(ccMidTop.*carn)/sum(ccMidBot.*carn);
 ccMidPara = sum(ccMidTop.*para)/sum(ccMidBot.*para);
@@ -189,7 +194,7 @@ ccMidPara = sum(ccMidTop.*para)/sum(ccMidBot.*para);
 ccInTop = full(diag(A'*A2));
 ccInBot = (gen0.*(gen0-1));
 ccIn = ccInTop./ccInBot;
-ccIn = ccIn/mean(ccIn,'omitnan');
+ccIn = ccIn/nanmean(ccIn);
 
 %ccIn(isnan(ccIn)) = 0;
 ccInCarn = sum(ccInTop.*carn)/sum(ccInBot.*carn);
@@ -198,7 +203,7 @@ ccInPara = sum(ccInTop.*para)/sum(ccInBot.*para);
 ccOutTop = full(diag(A2*A'));
 ccOutBot = (vul0.*(vul0-1));
 ccOut = ccOutTop./ccOutBot;
-ccOut = ccOut/mean(ccOut,'omitnan');
+ccOut = ccOut/nanmean(ccOut);
 
 %ccOut(isnan(ccOut)) = 0;
 ccOutCarn = sum(ccOutTop.*carn)/sum(ccOutBot.*carn);
@@ -206,7 +211,7 @@ ccOutPara = sum(ccOutTop.*para)/sum(ccOutBot.*para);
 
 C = L/S^2;
 
-Lcon = sum(sum(A(binCons,binCons),'omitnan'));
+Lcon = sum(nansum(A(binCons,binCons)));
 Scon = sum(binCons);
 Ccon = Lcon/Scon^2;
 

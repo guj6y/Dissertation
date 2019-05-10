@@ -8,7 +8,7 @@ nicheweb = full(A);
 S = 1:N;
 L = sum(sum(nicheweb));
 %Clustering Coefficient(s)
-cc = clustering_coefficients(A);
+[C, cc] = clustCoeff(A);
 
 %In degree (generalit)
 gen = full(sum(A))/(L/N);
@@ -24,7 +24,11 @@ for ii = 1:N
     
     prey_ii = nicheweb(:,ii)>0;
     vul_prey_ii = sum(nicheweb(prey_ii,:),2)/(L/N);
-    mean_vul_prey(ii) = mean(vul_prey_ii);
+    val = mean(vul_prey_ii);
+    if isempty(val)
+        val = 0;
+    end
+    mean_vul_prey(ii) = val;
     
 end
 
@@ -32,10 +36,13 @@ end
 %Mean topological fraction of predators' diet
 mean_gen_pred = zeros(N,1);
 for ii = 1:N
-    
     pred_ii = nicheweb(ii,:)>0;
     gen_pred_ii = sum(nicheweb(:,pred_ii))/(L/N);
-    mean_gen_pred(ii) = mean(gen_pred_ii);
+    val = mean(gen_pred_ii);
+    if isempty(val)
+        val = 0;
+    end
+    mean_gen_pred(ii) = val;
 end
 
 [betweenness,~,~,min_sp_tobasal,numBasalCon] = calcEcologicalBetweenness(res,con);
@@ -57,18 +64,14 @@ swTL = (paTL+sTL)/2;
 
 %Number of species in loops is the number of species in strongly connected
 %components larger than one species.
-[n_comp,comps] = graphconncomp(A,'Directed',1,'Weak',0);
-num_comp = zeros(1,n_comp);
-sp_in_loop = [];
-
-for ii = 1:n_comp
-    num_comp(ii) = sum(comps==ii);
-    if num_comp(ii) > 1
-        sp_in_loop = [sp_in_loop; S(comps==ii)'];
-    end
-end
+L = adj2adjL(A);
+[GC, I] = tarjan(L);
+#[n_comp,comps] = graphconncomp(A,'Directed',1,'Weak',0);
 inLoop = zeros(N,1);
-inLoop(sp_in_loop) = 1;
+for comp = GC
+  inLoop(comp{1}) = numel(comp{1});
+end
+inLoop = inLoop > 1;
 
 top_sp = sum(A,2)==0;
 %basal?
@@ -76,6 +79,7 @@ mean_vul_prey(basalsp) = 0;
 
 mean_gen_pred(top_sp) = 0;
 pageRank = calculatePageRank(res,con);
+
 local_properties = [cc,...                  1
                     gen',...                2
                     vul,...                 3
